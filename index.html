@@ -3,200 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:;base64,="><!-- prevent favicon 404 -->
 <title>Jadwal Fantastic 4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F6F4EF;
-    --panel:#FFFFFF;
-    --ink:#181A1E;
-    --sub:#6B6A63;
-    --line:#E2DFD5;
-    --line-strong:#CFCBBD;
-    --pagi:#B8791A;
-    --pagi-bg:#FBF0DE;
-    --siang:#1E7A72;
-    --siang-bg:#E2F4F1;
-    --malam:#3E4C8A;
-    --malam-bg:#E7E9F7;
-    --cuti:#3D7A3F;
-    --cuti-bg:#E5F3E4;
-    --off:#A6A398;
-    --off-bg:#F1EFE8;
-    --accent:#B8391E;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-sizing: border-box;
+    --bg:#F6F4EF; --panel:#FFFFFF; --ink:#181A1E; --sub:#6B6A63; --line:#E2DFD5; --line-strong:#CFCBBD;
+    --pagi:#B8791A; --pagi-bg:#FBF0DE; --siang:#1E7A72; --siang-bg:#E2F4F1; --malam:#3E4C8A; --malam-bg:#E7E9F7;
+    --cuti:#3D7A3F; --cuti-bg:#E5F3E4; --off:#A6A398; --off-bg:#F1EFE8; --accent:#B8391E;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); box-sizing: border-box;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#15161A; --panel:#1D1F25; --ink:#F1F0EC; --sub:#A2A099;
-      --line:#31333B; --line-strong:#40434C;
-      --pagi-bg:#3A2E12; --siang-bg:#0F2E2A; --malam-bg:#20233F;
-      --cuti-bg:#132C16; --off-bg:#24262C;
+      --bg:#15161A; --panel:#1D1F25; --ink:#F1F0EC; --sub:#A2A099; --line:#31333B; --line-strong:#40434C;
+      --pagi-bg:#3A2E12; --siang-bg:#0F2E2A; --malam-bg:#20233F; --cuti-bg:#132C16; --off-bg:#24262C;
     }
   }
   :root[data-theme="dark"]{
-    --bg:#15161A; --panel:#1D1F25; --ink:#F1F0EC; --sub:#A2A099;
-    --line:#31333B; --line-strong:#40434C;
-    --pagi-bg:#3A2E12; --siang-bg:#0F2E2A; --malam-bg:#20233F;
-    --cuti-bg:#132C16; --off-bg:#24262C;
+    --bg:#15161A; --panel:#1D1F25; --ink:#F1F0EC; --sub:#A2A099; --line:#31333B; --line-strong:#40434C;
+    --pagi-bg:#3A2E12; --siang-bg:#0F2E2A; --malam-bg:#20233F; --cuti-bg:#132C16; --off-bg:#24262C;
   }
-  html{ scroll-padding-top: env(safe-area-inset-top, 0px); height:100%; }
-  *{ box-sizing:border-box; }
-  body{
-    margin:0; min-height:100%;
-    background:var(--bg); color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  header.top{
-    position:sticky; top:env(safe-area-inset-top,0px); z-index:30;
-    background:var(--bg);
-    border-bottom:1px solid var(--line);
-    padding:18px 20px 0;
-  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); height:100%; } *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  header.top{ position:sticky; top:env(safe-area-inset-top,0px); z-index:30; background:var(--bg); border-bottom:1px solid var(--line); padding:18px 20px 0; }
   .brand{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .brand h1{
-    font-family:'Space Grotesk',sans-serif; font-weight:700;
-    font-size:22px; letter-spacing:-0.01em; margin:0;
-  }
+  .brand h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; letter-spacing:-0.01em; margin:0; }
   .brand .range{ color:var(--sub); font-size:13px; font-variant-numeric: tabular-nums; }
-
-  .sync-row{
-    display:flex; align-items:center; gap:7px;
-    font-size:12px; color:var(--sub); margin-top:6px;
-  }
-  .sync-dot{
-    width:7px; height:7px; border-radius:50%;
-    background:var(--off); flex:none;
-  }
+  .sync-row{ display:flex; align-items:center; gap:7px; font-size:12px; color:var(--sub); margin-top:6px; }
+  .sync-dot{ width:7px; height:7px; border-radius:50%; background:var(--off); flex:none; }
   .sync-row.online .sync-dot{ background:var(--siang); }
   .sync-row.denied .sync-dot{ background:var(--accent); }
   .sync-row.stale .sync-dot{ background:var(--pagi); }
-  .sync-row a.reconnect{ color:var(--accent); text-decoration:underline; margin-left:2px; }
-
   .view-tabs{ display:flex; gap:4px; margin-top:16px; }
-  .view-tabs button{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
-    padding:10px 16px; border:none; background:none; color:var(--sub);
-    cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;
-  }
+  .view-tabs button{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; padding:10px 16px; border:none; background:none; color:var(--sub); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }
   .view-tabs button.active{ color:var(--ink); border-bottom-color:var(--accent); }
-
   main{ padding:20px 20px 60px; max-width:1400px; margin:0 auto; }
   .view{ display:none; }
   .view.active{ display:block; }
-
-  .day-nav{
-    display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;
-  }
-  .day-nav button.arrow{
-    width:36px; height:36px; border-radius:10px; border:1px solid var(--line-strong);
-    background:var(--panel); color:var(--ink); font-size:16px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .day-nav{ display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .day-nav button.arrow{ width:36px; height:36px; border-radius:10px; border:1px solid var(--line-strong); background:var(--panel); color:var(--ink); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .day-nav button.arrow:disabled{ opacity:0.35; cursor:not-allowed; }
-  select#daySelect{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
-    padding:9px 12px; border-radius:10px; border:1px solid var(--line-strong);
-    background:var(--panel); color:var(--ink);
-  }
-  .date-hero{
-    font-family:'Space Grotesk',sans-serif;
-    margin-bottom:20px;
-  }
-  .date-hero .big{
-    font-size:clamp(28px,5vw,42px); font-weight:700; letter-spacing:-0.01em; line-height:1.05;
-  }
+  select#daySelect{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; padding:9px 12px; border-radius:10px; border:1px solid var(--line-strong); background:var(--panel); color:var(--ink); }
+  .date-hero{ font-family:'Space Grotesk',sans-serif; margin-bottom:20px; }
+  .date-hero .big{ font-size:clamp(28px,5vw,42px); font-weight:700; letter-spacing:-0.01em; line-height:1.05; }
   .date-hero .sub{ color:var(--sub); font-size:14px; margin-top:4px; font-family:'Inter'; }
-
-  .stat-strip{
-    display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:26px;
-  }
-  .stat-card{
-    background:var(--panel); border:1px solid var(--line); border-radius:12px;
-    padding:14px 14px 12px;
-  }
-  .stat-card .n{
-    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; line-height:1;
-  }
+  .stat-strip{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:26px; }
+  .stat-card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 14px 12px; }
+  .stat-card .n{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; line-height:1; }
   .stat-card .l{ font-size:12px; color:var(--sub); margin-top:6px; }
   .stat-card.pagi .n{ color:var(--pagi); }
   .stat-card.siang .n{ color:var(--siang); }
   .stat-card.malam .n{ color:var(--malam); }
   .stat-card.cuti .n{ color:var(--cuti); }
   .stat-card.off .n{ color:var(--off); }
-
   .shift-groups{ display:flex; flex-direction:column; gap:14px; }
-  .shift-block{
-    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
-  }
-  .shift-block .head{
-    display:flex; align-items:baseline; gap:10px; margin-bottom:10px;
-  }
-  .team-block .head{
-    display:flex; align-items:baseline; gap:10px; margin-bottom:12px; flex-wrap:wrap;
-  }
-  .team-block .head .name{
-    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px;
-  }
+  .shift-block{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .team-block .head{ display:flex; align-items:baseline; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .team-block .head .name{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; }
   .team-block .head .summary{ font-size:12.5px; color:var(--sub); }
   .person-lines{ display:flex; flex-direction:column; }
-  .person-line{
-    display:flex; align-items:center; gap:10px;
-    padding:8px 0; border-top:1px solid var(--line);
-  }
+  .person-line{ display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); }
   .person-line:first-child{ border-top:none; }
   .person-line .pname{ font-size:13.5px; font-weight:600; min-width:90px; }
   .person-line .ptime{ font-size:12px; color:var(--sub); margin-left:auto; }
-  .person-line .pbadge{
-    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px;
-    padding:3px 9px; border-radius:7px;
-  }
-
-  .table-controls{
-    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;
-  }
+  .person-line .pbadge{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; padding:3px 9px; border-radius:7px; }
+  .table-controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
   .team-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
-  .team-tabs button{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
-    padding:7px 13px; border-radius:999px; border:1px solid var(--line-strong);
-    background:var(--panel); color:var(--ink); cursor:pointer;
-  }
+  .team-tabs button{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; padding:7px 13px; border-radius:999px; border:1px solid var(--line-strong); background:var(--panel); color:var(--ink); cursor:pointer; }
   .team-tabs button.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
   .search-wrap{ position:relative; margin-left:auto; }
-  input#search{
-    font-family:'Inter'; font-size:14px; padding:8px 12px 8px 32px;
-    border-radius:10px; border:1px solid var(--line-strong);
-    background:var(--panel); color:var(--ink); width:180px;
-  }
+  input#search{ font-family:'Inter'; font-size:14px; padding:8px 12px 8px 32px; border-radius:10px; border:1px solid var(--line-strong); background:var(--panel); color:var(--ink); width:180px; }
   .search-wrap svg{ position:absolute; left:10px; top:9px; opacity:0.5; }
-
   .legend{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-bottom:16px; font-size:12px; color:var(--sub); }
   .legend .item{ display:flex; align-items:center; gap:6px; }
   .swatch{ width:11px; height:11px; border-radius:3px; display:inline-block; }
-
   .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--panel); }
   table{ border-collapse:separate; border-spacing:0; min-width:100%; }
-  thead th{
-    position:sticky; top:0; z-index:5; background:var(--panel);
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; color:var(--sub);
-    text-align:center; padding:8px 6px; border-bottom:1px solid var(--line); white-space:nowrap;
-  }
+  thead th{ position:sticky; top:0; z-index:5; background:var(--panel); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; color:var(--sub); text-align:center; padding:8px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
   thead tr.daynames th{ font-size:10px; font-weight:500; color:var(--sub); padding-top:0; padding-bottom:8px; top:34px; }
-  th.name-col, td.name-col{
-    position:sticky; left:0; z-index:6; background:var(--panel);
-    text-align:left; border-right:1px solid var(--line); padding-left:14px !important; min-width:130px;
-  }
+  th.name-col, td.name-col{ position:sticky; left:0; z-index:6; background:var(--panel); text-align:left; border-right:1px solid var(--line); padding-left:14px !important; min-width:130px; }
   thead th.name-col{ z-index:8; }
-  tbody tr.team-row td{
-    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.02em;
-    background:var(--bg); padding:9px 14px; border-bottom:1px solid var(--line);
-    border-top:1px solid var(--line); color:var(--ink);
-  }
+  tbody tr.team-row td{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.02em; background:var(--bg); padding:9px 14px; border-bottom:1px solid var(--line); border-top:1px solid var(--line); color:var(--ink); }
   tbody tr.person-row td{ padding:6px; text-align:center; border-bottom:1px solid var(--line); font-size:12px; }
   tbody tr.person-row td.name-col{ font-weight:600; font-size:13px; padding-top:8px; padding-bottom:8px; }
   tbody tr.person-row:hover td{ filter:brightness(0.97); }
@@ -211,26 +100,12 @@
   :root[data-theme="dark"] .weekend-col{ background:rgba(255,255,255,0.03); }
   .hidden{ display:none !important; }
   .empty-state{ padding:40px 20px; text-align:center; color:var(--sub); font-size:14px; }
-
   footer{ max-width:1400px; margin:0 auto; padding:6px 20px 30px; color:var(--sub); font-size:12px; }
-
-  @media (max-width:760px){
-    .stat-strip{ grid-template-columns:repeat(3,1fr); }
-    .stat-strip .stat-card:nth-child(4), .stat-strip .stat-card:nth-child(5){ grid-column:span 1; }
-  }
-  @media (max-width:640px){
-    header.top{ padding:14px 14px 0; }
-    main{ padding:14px 14px 50px; }
-    .brand h1{ font-size:19px; }
-    .search-wrap{ margin-left:0; width:100%; }
-    input#search{ width:100%; }
-    .table-controls{ flex-direction:column; align-items:stretch; }
-    .stat-strip{ grid-template-columns:repeat(2,1fr); }
-  }
+  @media (max-width:760px){ .stat-strip{ grid-template-columns:repeat(3,1fr); } .stat-strip .stat-card:nth-child(4), .stat-strip .stat-card:nth-child(5){ grid-column:span 1; } }
+  @media (max-width:640px){ header.top{ padding:14px 14px 0; } main{ padding:14px 14px 50px; } .brand h1{ font-size:19px; } .search-wrap{ margin-left:0; width:100%; } input#search{ width:100%; } .table-controls{ flex-direction:column; align-items:stretch; } .stat-strip{ grid-template-columns:repeat(2,1fr); } }
 </style>
 </head>
 <body>
-
 <header class="top">
   <div class="brand">
     <h1>Jadwal Fantastic 4</h1>
@@ -250,12 +125,7 @@
       <select id="daySelect"></select>
       <button class="arrow" id="nextDay" aria-label="Hari berikutnya">›</button>
     </div>
-
-    <div class="date-hero">
-      <div class="big" id="heroDate"></div>
-      <div class="sub" id="heroSub"></div>
-    </div>
-
+    <div class="date-hero"><div class="big" id="heroDate"></div><div class="sub" id="heroSub"></div></div>
     <div class="stat-strip" id="statStrip"></div>
     <div class="shift-groups" id="shiftGroups"></div>
   </section>
@@ -286,69 +156,46 @@
 
 <script>
 const DATA = { dates: [], days: [], teams: {} };
-
-const SHIFT_INFO = {
-  CF: {group:'pagi', time:'06:00–14:00'},
-  CG: {group:'pagi', time:'07:00–15:00'},
-  EF: {group:'pagi', time:'06:00–12:00'},
-  EG: {group:'pagi', time:'07:00–13:00'},
-  CK: {group:'siang', time:'11:00–19:00'},
-  CL: {group:'siang', time:'12:00–20:00'},
-  DN: {group:'malam', time:'14:30–22:30'},
-  FP: {group:'malam', time:'16:30–22:30'},
-  AL: {group:'cuti', time:'Cuti'},
-  X: {group:'off', time:'Libur'}
-};
+const DAY_NAMES = ['SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU','MINGGU'];
+const SHIFT_INFO = {CF:{group:'pagi',time:'06:00–14:00'},CG:{group:'pagi',time:'07:00–15:00'},EF:{group:'pagi',time:'06:00–12:00'},EG:{group:'pagi',time:'07:00–13:00'},CK:{group:'siang',time:'11:00–19:00'},CL:{group:'siang',time:'12:00–20:00'},DN:{group:'malam',time:'14:30–22:30'},FP:{group:'malam',time:'16:30–22:30'},AL:{group:'cuti',time:'Cuti'},X:{group:'off',time:'Libur'}};
 const GROUP_LABEL = {pagi:'Pagi', siang:'Siang', malam:'Malam', cuti:'Cuti', off:'Libur'};
 const GROUP_ORDER = ['pagi','siang','malam','cuti','off'];
-const DAY_FULL = {SENIN:'Senin', SELASA:'Selasa', RABU:'Rabu', KAMIS:'Kamis', JUMAT:'Jumat', SABTU:'Sabtu', MINGGU:'Minggu'};
-
+const DAY_FULL = {SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat',SABTU:'Sabtu',MINGGU:'Minggu'};
 let activeTeam = 'ALL';
 let dayIndex = 0;
 
-function hasScheduleData(){
-  return Array.isArray(DATA.dates) && DATA.dates.length > 0 && DATA.teams && Object.keys(DATA.teams).length > 0;
-}
-
+function hasScheduleData(){ return Array.isArray(DATA.dates) && DATA.dates.length > 0 && DATA.teams && Object.keys(DATA.teams).length > 0; }
 function isWeekend(day){ return day === 'SABTU' || day === 'MINGGU'; }
+function normalizeDay(raw){ return String(raw || '').trim().toUpperCase(); }
 
 function buildDaySelect(){
   const sel = document.getElementById('daySelect');
   sel.innerHTML = '';
-  if(!hasScheduleData()){ return; }
+  if(!hasScheduleData()) return;
   DATA.dates.forEach((d,i) => {
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = `${DAY_FULL[DATA.days[i]] || DATA.days[i]}, ${d}`;
+    opt.textContent = `${DAY_FULL[DATA.days[i]] || DATA.days[i] || 'Hari', `${d}`}`;
     sel.appendChild(opt);
   });
   sel.value = Math.min(dayIndex, DATA.dates.length - 1);
-  sel.onchange = () => {
-    dayIndex = parseInt(sel.value, 10);
-    renderDashboard();
-  };
+  sel.onchange = () => { dayIndex = parseInt(sel.value,10); renderDashboard(); };
 }
 
 function renderDashboard(){
-  if(!hasScheduleData()){
-    document.getElementById('statStrip').innerHTML = '';
-    document.getElementById('shiftGroups').innerHTML = '';
-    return;
-  }
-
+  if(!hasScheduleData()){ document.getElementById('statStrip').innerHTML=''; document.getElementById('shiftGroups').innerHTML=''; return; }
   const sel = document.getElementById('daySelect');
   sel.value = Math.min(dayIndex, DATA.dates.length - 1);
   document.getElementById('prevDay').disabled = dayIndex === 0;
   document.getElementById('nextDay').disabled = dayIndex === DATA.dates.length - 1;
-
-  const dayName = DATA.days[dayIndex];
-  document.getElementById('heroDate').textContent = `${DAY_FULL[dayName] || dayName}, ${DATA.dates[dayIndex]}`;
+  const dayName = DATA.days[dayIndex] || '';
+  document.getElementById('heroDate').textContent = `${DAY_FULL[dayName] || dayName || 'Hari'}, ${DATA.dates[dayIndex]}`;
   document.getElementById('heroSub').textContent = isWeekend(dayName) ? 'Akhir pekan' : 'Hari kerja';
 
-  const byGroup = {pagi:[], siang:[], malam:[], cuti:[], off:[]};
+  const byGroup = {pagi:[],siang:[],malam:[],cuti:[],off:[]};
   Object.values(DATA.teams).forEach(people => {
     Object.values(people).forEach(shifts => {
-      const code = shifts[dayIndex] || '';
+      const code = (shifts[dayIndex] || '').trim();
       const info = SHIFT_INFO[code];
       if(info) byGroup[info.group].push(code);
     });
@@ -366,25 +213,20 @@ function renderDashboard(){
   const codeOrder = ['CF','EF','CG','EG','CK','CL','DN','FP','AL','X'];
   const groupsEl = document.getElementById('shiftGroups');
   groupsEl.innerHTML = '';
-
   Object.entries(DATA.teams).forEach(([teamName, people]) => {
     const entries = Object.entries(people)
-      .map(([pname, shifts]) => ({name:pname, code:(shifts[dayIndex] || '')}))
+      .map(([pname, shifts]) => ({name:pname, code:(shifts[dayIndex] || '').trim()}))
       .filter(e => e.code)
       .sort((a,b) => codeOrder.indexOf(a.code) - codeOrder.indexOf(b.code));
-
     if(entries.length === 0) return;
-
     const working = entries.filter(e => e.code !== 'X' && e.code !== 'AL').length;
     const resting = entries.length - working;
-
     const block = document.createElement('div');
     block.className = 'team-block shift-block';
     const head = document.createElement('div');
     head.className = 'head';
     head.innerHTML = `<span class="name">${teamName}</span><span class="summary">${working} kerja · ${resting} libur/cuti</span>`;
     block.appendChild(head);
-
     const lines = document.createElement('div');
     lines.className = 'person-lines';
     entries.forEach(e => {
@@ -399,12 +241,8 @@ function renderDashboard(){
   });
 }
 
-document.getElementById('prevDay').addEventListener('click', () => {
-  if(dayIndex > 0){ dayIndex--; renderDashboard(); }
-});
-document.getElementById('nextDay').addEventListener('click', () => {
-  if(dayIndex < DATA.dates.length - 1){ dayIndex++; renderDashboard(); }
-});
+document.getElementById('prevDay').addEventListener('click', () => { if(dayIndex > 0){ dayIndex--; renderDashboard(); } });
+document.getElementById('nextDay').addEventListener('click', () => { if(dayIndex < DATA.dates.length - 1){ dayIndex++; renderDashboard(); } });
 
 function buildLegend(){
   const el = document.getElementById('legend');
@@ -461,15 +299,12 @@ function renderTable(){
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
   if(!hasScheduleData()) return;
-
   const q = document.getElementById('search').value.trim().toUpperCase();
   let shown = 0;
-
   Object.entries(DATA.teams).forEach(([teamName, people]) => {
     if(activeTeam !== 'ALL' && activeTeam !== teamName) return;
     const matchedPeople = Object.entries(people).filter(([pname]) => !q || pname.toUpperCase().includes(q));
     if(matchedPeople.length === 0) return;
-
     const teamRow = document.createElement('tr');
     teamRow.className = 'team-row';
     const teamTd = document.createElement('td');
@@ -478,7 +313,6 @@ function renderTable(){
     teamRow.appendChild(teamTd);
     DATA.dates.forEach(() => teamRow.appendChild(document.createElement('td')));
     tbody.appendChild(teamRow);
-
     matchedPeople.forEach(([pname, shifts]) => {
       shown++;
       const tr = document.createElement('tr');
@@ -489,7 +323,6 @@ function renderTable(){
       tbody.appendChild(tr);
     });
   });
-
   document.getElementById('emptyState').classList.toggle('hidden', shown > 0);
   document.getElementById('scheduleTable').classList.toggle('hidden', shown === 0);
 }
@@ -501,34 +334,23 @@ const tabTable = document.getElementById('tabTable');
 const viewDash = document.getElementById('viewDash');
 const viewTable = document.getElementById('viewTable');
 
-tabDash.addEventListener('click', () => {
-  tabDash.classList.add('active'); tabTable.classList.remove('active');
-  viewDash.classList.add('active'); viewTable.classList.remove('active');
-});
-tabTable.addEventListener('click', () => {
-  tabTable.classList.add('active'); tabDash.classList.remove('active');
-  viewTable.classList.add('active'); viewDash.classList.remove('active');
-});
+tabDash.addEventListener('click', () => { tabDash.classList.add('active'); tabTable.classList.remove('active'); viewDash.classList.add('active'); viewTable.classList.remove('active'); });
+tabTable.addEventListener('click', () => { tabTable.classList.add('active'); tabDash.classList.remove('active'); viewTable.classList.add('active'); viewDash.classList.remove('active'); });
 
 const PUBLISH_KEY = '2PACX-1vTuv0DHS_mAjL1WVEmNtH1DouA6AZe5cmd9is5C9vlDuy2uNrv_0W9i87q8ra6u5xOx8RTbqZ6Rf_Oc';
 const SYNC_INTERVAL_MS = 60000;
-const CSV_SOURCES = [
-  `https://docs.google.com/spreadsheets/d/e/${PUBLISH_KEY}/pub?output=csv`,
-];
+const CSV_SOURCES = [`https://docs.google.com/spreadsheets/d/e/${PUBLISH_KEY}/pub?output=csv`];
 
 function parseCSV(text){
   const rows = [];
   let row = [], field = '', inQuotes = false;
-
   for(let i = 0; i < text.length; i++){
     const c = text[i];
     if(inQuotes){
       if(c === '"'){
         if(text[i + 1] === '"'){ field += '"'; i++; }
         else inQuotes = false;
-      } else {
-        field += c;
-      }
+      } else field += c;
     } else {
       if(c === '"') inQuotes = true;
       else if(c === ','){ row.push(field); field = ''; }
@@ -536,50 +358,48 @@ function parseCSV(text){
         if(c === '\r' && text[i + 1] === '\n') i++;
         row.push(field); field = '';
         rows.push(row); row = [];
-      } else {
-        field += c;
-      }
+      } else field += c;
     }
   }
-
   if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
   return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+function isDayHeaderRow(cells){
+  const vals = cells.filter(v => String(v).trim() !== '');
+  if(vals.length === 0) return false;
+  return vals.some(v => DAY_NAMES.includes(normalizeDay(v)));
 }
 
 function parseSheetRows(rows){
   const teams = {};
   let dates = null;
   let days = null;
-  let stage = 'idle';
   let currentTeam = null;
 
   for(const cellsRaw of rows){
-    const cells = cellsRaw.map(c => (c || '').trim());
+    const cells = cellsRaw.map(c => String(c || '').trim());
     const nonEmpty = cells.filter(c => c !== '');
     if(nonEmpty.length === 0) continue;
-
     const first = cells[0] || '';
 
-    if(nonEmpty.length === 1 && /^TIM\s/i.test(first)){
+    if(/^TIM\s/i.test(first)){
       currentTeam = first;
       teams[currentTeam] = {};
-      stage = 'awaitDates';
       continue;
     }
 
-    if(stage === 'awaitDates' && /NAMA/i.test(first)){
-      if(!dates) dates = cells.slice(1);
-      stage = 'awaitDays';
+    if(currentTeam && /^NAMA$/i.test(first)){
+      dates = cells.slice(1);
       continue;
     }
 
-    if(stage === 'awaitDays' && /NAMA/i.test(first)){
-      if(!days) days = cells.slice(1);
-      stage = 'people';
+    if(currentTeam && isDayHeaderRow(cells)){
+      days = cells.map(c => normalizeDay(c)).filter(Boolean);
       continue;
     }
 
-    if(stage === 'people' && currentTeam && first !== '' && !/^KODE SHIFT/i.test(first)){
+    if(currentTeam && first && !/^KODE\sSHIFT$/i.test(first) && !/^WAKTU$/i.test(first) && !/^NAMA$/i.test(first) && !DAY_NAMES.includes(normalizeDay(first))){
       teams[currentTeam][first] = cells.slice(1);
     }
   }
@@ -588,8 +408,10 @@ function parseSheetRows(rows){
     let len = dates.length;
     while(len > 0 && dates[len - 1] === '') len--;
     dates = dates.slice(0, len);
-    if(days) days = days.slice(0, len);
-
+    if(!days || days.length < len){
+      days = Array(len).fill('');
+      if(days.length === 0) days = [];
+    }
     Object.values(teams).forEach(people => {
       Object.keys(people).forEach(p => {
         const arr = people[p].slice(0, len);
@@ -599,7 +421,7 @@ function parseSheetRows(rows){
     });
   }
 
-  return {dates, days, teams};
+  return { dates, days, teams };
 }
 
 function refreshAllViews(){
@@ -613,15 +435,8 @@ function refreshAllViews(){
   renderTable();
 }
 
-function setSyncStatus(state, text){
-  const row = document.getElementById('syncRow');
-  row.className = 'sync-row ' + state;
-  document.getElementById('syncText').textContent = text;
-}
-
-function fmtTime(d){
-  return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-}
+function setSyncStatus(state, text){ const row = document.getElementById('syncRow'); row.className = 'sync-row ' + state; document.getElementById('syncText').textContent = text; }
+function fmtTime(d){ return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}); }
 
 async function fetchLatestData(){
   for(const base of CSV_SOURCES){
@@ -635,15 +450,12 @@ async function fetchLatestData(){
       if(parsed.dates && parsed.days && Object.keys(parsed.teams).length > 0){
         return parsed;
       }
-    }catch(e) {
-      // lanjut ke sumber berikutnya kalau ada
-    }
+    }catch(e){}
   }
   return null;
 }
 
 let lastSyncOk = false;
-
 async function syncOnce(){
   const parsed = await fetchLatestData();
   if(parsed){
