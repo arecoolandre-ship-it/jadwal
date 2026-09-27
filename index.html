@@ -90,7 +90,6 @@
   .view{ display:none; }
   .view.active{ display:block; }
 
-  /* ---------- Dashboard ---------- */
   .day-nav{
     display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;
   }
@@ -138,27 +137,6 @@
   .shift-block .head{
     display:flex; align-items:baseline; gap:10px; margin-bottom:10px;
   }
-  .shift-block .code-badge{
-    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px;
-    padding:3px 9px; border-radius:7px;
-  }
-  .shift-block .time{ font-size:12.5px; color:var(--sub); }
-  .shift-block .count{ margin-left:auto; font-size:12.5px; color:var(--sub); }
-  .people-chips{ display:flex; flex-wrap:wrap; gap:7px; }
-  .chip{
-    display:flex; align-items:center; gap:6px;
-    border:1px solid var(--line); border-radius:999px;
-    padding:5px 11px 5px 5px; font-size:13px; background:var(--bg);
-  }
-  .chip .dot{ width:7px; height:7px; border-radius:50%; }
-  .chip .team{ color:var(--sub); font-size:11px; }
-
-  .off-section{ margin-top:18px; }
-  .off-section .title{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
-    color:var(--sub); margin-bottom:8px;
-  }
-
   .team-block .head{
     display:flex; align-items:baseline; gap:10px; margin-bottom:12px; flex-wrap:wrap;
   }
@@ -179,7 +157,6 @@
     padding:3px 9px; border-radius:7px;
   }
 
-  /* ---------- Table view ---------- */
   .table-controls{
     display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;
   }
@@ -257,7 +234,7 @@
 <header class="top">
   <div class="brand">
     <h1>Jadwal Fantastic 4</h1>
-    <span class="range" id="rangeLabel">21 Sep — 20 Okt 2026</span>
+    <span class="range" id="rangeLabel">Memuat data…</span>
   </div>
   <div class="sync-row" id="syncRow"><span class="sync-dot" id="syncDot"></span><span id="syncText"></span></div>
   <div class="view-tabs">
@@ -267,8 +244,6 @@
 </header>
 
 <main>
-
-  <!-- Dashboard view -->
   <section class="view active" id="viewDash">
     <div class="day-nav">
       <button class="arrow" id="prevDay" aria-label="Hari sebelumnya">‹</button>
@@ -282,11 +257,9 @@
     </div>
 
     <div class="stat-strip" id="statStrip"></div>
-
     <div class="shift-groups" id="shiftGroups"></div>
   </section>
 
-  <!-- Table view -->
   <section class="view" id="viewTable">
     <div class="table-controls">
       <div class="team-tabs" id="teamTabs"></div>
@@ -307,13 +280,12 @@
     </div>
     <div class="empty-state hidden" id="emptyState">Tidak ada nama yang cocok.</div>
   </section>
-
 </main>
 
-<footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X[...]
+<footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X libur</footer>
 
 <script>
-const DATA = {"dates": ["21-Sep", "22-Sep", "23-Sep", "24-Sep", "25-Sep", "26-Sep", "27-Sep", "28-Sep", "29-Sep", "30-Sep", "1-Oct", "2-Oct", "3-Oct", "4-Oct", "5-Oct", "6-Oct", "7-Oct", "8-Oct",[...]
+const DATA = { dates: [], days: [], teams: {} };
 
 const SHIFT_INFO = {
   CF: {group:'pagi', time:'06:00–14:00'},
@@ -325,7 +297,7 @@ const SHIFT_INFO = {
   DN: {group:'malam', time:'14:30–22:30'},
   FP: {group:'malam', time:'16:30–22:30'},
   AL: {group:'cuti', time:'Cuti'},
-  X: {group:'off', time:'Libur'},
+  X: {group:'off', time:'Libur'}
 };
 const GROUP_LABEL = {pagi:'Pagi', siang:'Siang', malam:'Malam', cuti:'Cuti', off:'Libur'};
 const GROUP_ORDER = ['pagi','siang','malam','cuti','off'];
@@ -334,41 +306,54 @@ const DAY_FULL = {SENIN:'Senin', SELASA:'Selasa', RABU:'Rabu', KAMIS:'Kamis', JU
 let activeTeam = 'ALL';
 let dayIndex = 0;
 
-/* ---------- shared ---------- */
+function hasScheduleData(){
+  return Array.isArray(DATA.dates) && DATA.dates.length > 0 && DATA.teams && Object.keys(DATA.teams).length > 0;
+}
+
 function isWeekend(day){ return day === 'SABTU' || day === 'MINGGU'; }
 
-/* ================= DASHBOARD ================= */
 function buildDaySelect(){
   const sel = document.getElementById('daySelect');
   sel.innerHTML = '';
+  if(!hasScheduleData()){ return; }
   DATA.dates.forEach((d,i) => {
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = `${DAY_FULL[DATA.days[i]]}, ${d}`;
+    opt.textContent = `${DAY_FULL[DATA.days[i]] || DATA.days[i]}, ${d}`;
     sel.appendChild(opt);
   });
-  sel.value = dayIndex;
-  sel.addEventListener('change', () => { dayIndex = parseInt(sel.value,10); renderDashboard(); });
+  sel.value = Math.min(dayIndex, DATA.dates.length - 1);
+  sel.onchange = () => {
+    dayIndex = parseInt(sel.value, 10);
+    renderDashboard();
+  };
 }
 
 function renderDashboard(){
-  document.getElementById('daySelect').value = dayIndex;
+  if(!hasScheduleData()){
+    document.getElementById('statStrip').innerHTML = '';
+    document.getElementById('shiftGroups').innerHTML = '';
+    return;
+  }
+
+  const sel = document.getElementById('daySelect');
+  sel.value = Math.min(dayIndex, DATA.dates.length - 1);
   document.getElementById('prevDay').disabled = dayIndex === 0;
   document.getElementById('nextDay').disabled = dayIndex === DATA.dates.length - 1;
 
   const dayName = DATA.days[dayIndex];
-  document.getElementById('heroDate').textContent = `${DAY_FULL[dayName]}, ${DATA.dates[dayIndex]}`;
+  document.getElementById('heroDate').textContent = `${DAY_FULL[dayName] || dayName}, ${DATA.dates[dayIndex]}`;
   document.getElementById('heroSub').textContent = isWeekend(dayName) ? 'Akhir pekan' : 'Hari kerja';
 
-  // overall stat strip (across all teams)
   const byGroup = {pagi:[], siang:[], malam:[], cuti:[], off:[]};
   Object.values(DATA.teams).forEach(people => {
     Object.values(people).forEach(shifts => {
-      const code = shifts[dayIndex];
+      const code = shifts[dayIndex] || '';
       const info = SHIFT_INFO[code];
       if(info) byGroup[info.group].push(code);
     });
   });
+
   const strip = document.getElementById('statStrip');
   strip.innerHTML = '';
   GROUP_ORDER.forEach(g => {
@@ -378,14 +363,13 @@ function renderDashboard(){
     strip.appendChild(card);
   });
 
-  // per-team breakdown
   const codeOrder = ['CF','EF','CG','EG','CK','CL','DN','FP','AL','X'];
   const groupsEl = document.getElementById('shiftGroups');
   groupsEl.innerHTML = '';
 
   Object.entries(DATA.teams).forEach(([teamName, people]) => {
     const entries = Object.entries(people)
-      .map(([pname, shifts]) => ({name:pname, code:shifts[dayIndex]}))
+      .map(([pname, shifts]) => ({name:pname, code:(shifts[dayIndex] || '')}))
       .filter(e => e.code)
       .sort((a,b) => codeOrder.indexOf(a.code) - codeOrder.indexOf(b.code));
 
@@ -415,14 +399,13 @@ function renderDashboard(){
   });
 }
 
-function teamShort(t){
-  return t.replace('TIM ', '');
-}
+document.getElementById('prevDay').addEventListener('click', () => {
+  if(dayIndex > 0){ dayIndex--; renderDashboard(); }
+});
+document.getElementById('nextDay').addEventListener('click', () => {
+  if(dayIndex < DATA.dates.length - 1){ dayIndex++; renderDashboard(); }
+});
 
-document.getElementById('prevDay').addEventListener('click', () => { if(dayIndex>0){ dayIndex--; renderDashboard(); } });
-document.getElementById('nextDay').addEventListener('click', () => { if(dayIndex<DATA.dates.length-1){ dayIndex++; renderDashboard(); } });
-
-/* ================= TABLE VIEW ================= */
 function buildLegend(){
   const el = document.getElementById('legend');
   el.innerHTML = '';
@@ -437,6 +420,7 @@ function buildLegend(){
 function buildTabs(){
   const wrap = document.getElementById('teamTabs');
   wrap.innerHTML = '';
+  if(!hasScheduleData()) return;
   const names = ['ALL', ...Object.keys(DATA.teams)];
   names.forEach(name => {
     const btn = document.createElement('button');
@@ -452,13 +436,14 @@ function buildHeader(){
   const dayRow = document.getElementById('dayRow');
   dateRow.innerHTML = '<th class="name-col">Nama</th>';
   dayRow.innerHTML = '<th class="name-col"></th>';
+  if(!hasScheduleData()) return;
   DATA.dates.forEach((d,i) => {
     const th1 = document.createElement('th');
     th1.textContent = d;
     if(isWeekend(DATA.days[i])) th1.classList.add('weekend-col');
     dateRow.appendChild(th1);
     const th2 = document.createElement('th');
-    th2.textContent = DATA.days[i].slice(0,3);
+    th2.textContent = (DATA.days[i] || '').slice(0,3);
     if(isWeekend(DATA.days[i])) th2.classList.add('weekend-col');
     dayRow.appendChild(th2);
   });
@@ -473,9 +458,11 @@ function cellHTML(code, dayIsWeekend){
 }
 
 function renderTable(){
-  const q = document.getElementById('search').value.trim().toUpperCase();
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
+  if(!hasScheduleData()) return;
+
+  const q = document.getElementById('search').value.trim().toUpperCase();
   let shown = 0;
 
   Object.entries(DATA.teams).forEach(([teamName, people]) => {
@@ -509,7 +496,6 @@ function renderTable(){
 
 document.getElementById('search').addEventListener('input', renderTable);
 
-/* ================= VIEW SWITCH ================= */
 const tabDash = document.getElementById('tabDash');
 const tabTable = document.getElementById('tabTable');
 const viewDash = document.getElementById('viewDash');
@@ -524,10 +510,8 @@ tabTable.addEventListener('click', () => {
   viewTable.classList.add('active'); viewDash.classList.remove('active');
 });
 
-/* ================= LIVE SYNC (published Google Sheet, no login) ================= */
 const PUBLISH_KEY = '2PACX-1vTuv0DHS_mAjL1WVEmNtH1DouA6AZe5cmd9is5C9vlDuy2uNrv_0W9i87q8ra6u5xOx8RTbqZ6Rf_Oc';
 const SYNC_INTERVAL_MS = 60000;
-
 const CSV_SOURCES = [
   `https://docs.google.com/spreadsheets/d/e/${PUBLISH_KEY}/pub?output=csv`,
 ];
@@ -535,36 +519,46 @@ const CSV_SOURCES = [
 function parseCSV(text){
   const rows = [];
   let row = [], field = '', inQuotes = false;
+
   for(let i = 0; i < text.length; i++){
     const c = text[i];
     if(inQuotes){
       if(c === '"'){
-        if(text[i+1] === '"'){ field += '"'; i++; }
+        if(text[i + 1] === '"'){ field += '"'; i++; }
         else inQuotes = false;
-      } else field += c;
+      } else {
+        field += c;
+      }
     } else {
       if(c === '"') inQuotes = true;
       else if(c === ','){ row.push(field); field = ''; }
       else if(c === '\n' || c === '\r'){
-        if(c === '\r' && text[i+1] === '\n') i++;
+        if(c === '\r' && text[i + 1] === '\n') i++;
         row.push(field); field = '';
         rows.push(row); row = [];
-      } else field += c;
+      } else {
+        field += c;
+      }
     }
   }
+
   if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
   return rows.filter(r => r.some(c => c.trim() !== ''));
 }
 
 function parseSheetRows(rows){
   const teams = {};
-  let dates = null, days = null, stage = 'idle', currentTeam = null;
+  let dates = null;
+  let days = null;
+  let stage = 'idle';
+  let currentTeam = null;
 
   for(const cellsRaw of rows){
-    const cells = cellsRaw.map(c => c.trim());
+    const cells = cellsRaw.map(c => (c || '').trim());
     const nonEmpty = cells.filter(c => c !== '');
     if(nonEmpty.length === 0) continue;
-    const first = cells[0];
+
+    const first = cells[0] || '';
 
     if(nonEmpty.length === 1 && /^TIM\s/i.test(first)){
       currentTeam = first;
@@ -572,16 +566,19 @@ function parseSheetRows(rows){
       stage = 'awaitDates';
       continue;
     }
+
     if(stage === 'awaitDates' && /NAMA/i.test(first)){
       if(!dates) dates = cells.slice(1);
       stage = 'awaitDays';
       continue;
     }
+
     if(stage === 'awaitDays' && /NAMA/i.test(first)){
       if(!days) days = cells.slice(1);
       stage = 'people';
       continue;
     }
+
     if(stage === 'people' && currentTeam && first !== '' && !/^KODE SHIFT/i.test(first)){
       teams[currentTeam][first] = cells.slice(1);
     }
@@ -589,9 +586,10 @@ function parseSheetRows(rows){
 
   if(dates){
     let len = dates.length;
-    while(len > 0 && dates[len-1] === '') len--;
+    while(len > 0 && dates[len - 1] === '') len--;
     dates = dates.slice(0, len);
     if(days) days = days.slice(0, len);
+
     Object.values(teams).forEach(people => {
       Object.keys(people).forEach(p => {
         const arr = people[p].slice(0, len);
@@ -600,12 +598,14 @@ function parseSheetRows(rows){
       });
     });
   }
+
   return {dates, days, teams};
 }
 
 function refreshAllViews(){
+  if(!hasScheduleData()) return;
   dayIndex = Math.min(dayIndex, DATA.dates.length - 1);
-  document.getElementById('rangeLabel').textContent = `${DATA.dates[0]} — ${DATA.dates[DATA.dates.length-1]}`;
+  document.getElementById('rangeLabel').textContent = `${DATA.dates[0]} — ${DATA.dates[DATA.dates.length - 1]}`;
   buildDaySelect();
   renderDashboard();
   buildTabs();
@@ -627,7 +627,7 @@ async function fetchLatestData(){
   for(const base of CSV_SOURCES){
     try{
       const url = base + (base.includes('?') ? '&' : '?') + 'cachebust=' + Date.now();
-      const res = await fetch(url, {cache: 'no-store'});
+      const res = await fetch(url, {cache:'no-store'});
       if(!res.ok) continue;
       const text = await res.text();
       if(!text || !text.trim()) continue;
@@ -635,7 +635,9 @@ async function fetchLatestData(){
       if(parsed.dates && parsed.days && Object.keys(parsed.teams).length > 0){
         return parsed;
       }
-    }catch(e){ /* try next source */ }
+    }catch(e) {
+      // lanjut ke sumber berikutnya kalau ada
+    }
   }
   return null;
 }
@@ -654,18 +656,16 @@ async function syncOnce(){
   } else if(lastSyncOk){
     setSyncStatus('stale', 'Gagal menyegarkan sementara — menampilkan data terakhir yang berhasil disinkronkan.');
   } else {
-    setSyncStatus('denied', 'Belum berhasil membaca spreadsheet — menampilkan data bawaan. Pastikan sheet sudah "Published to web".');
+    setSyncStatus('denied', 'Belum berhasil membaca spreadsheet — menampilkan data bawaan.');
   }
 }
 
-/* ================= INIT ================= */
 buildDaySelect();
 renderDashboard();
 buildLegend();
 buildTabs();
 buildHeader();
 renderTable();
-document.getElementById('rangeLabel').textContent = `${DATA.dates[0]} — ${DATA.dates[DATA.dates.length-1]}`;
 setSyncStatus('', 'Menyambungkan ke spreadsheet…');
 syncOnce();
 setInterval(syncOnce, SYNC_INTERVAL_MS);
