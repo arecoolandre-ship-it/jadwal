@@ -1,1 +1,677 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jadwal Fantastic 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F4EF;
+    --panel:#FFFFFF;
+    --ink:#181A1E;
+    --sub:#6B6A63;
+    --line:#E2DFD5;
+    --line-strong:#CFCBBD;
+    --pagi:#B8791A;
+    --pagi-bg:#FBF0DE;
+    --siang:#1E7A72;
+    --siang-bg:#E2F4F1;
+    --malam:#3E4C8A;
+    --malam-bg:#E7E9F7;
+    --cuti:#3D7A3F;
+    --cuti-bg:#E5F3E4;
+    --off:#A6A398;
+    --off-bg:#F1EFE8;
+    --accent:#B8391E;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161A; --panel:#1D1F25; --ink:#F1F0EC; --sub:#A2A099;
+      --line:#31333B; --line-strong:#40434C;
+      --pagi-bg:#3A2E12; --siang-bg:#0F2E2A; --malam-bg:#20233F;
+      --cuti-bg:#132C16; --off-bg:#24262C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161A; --panel:#1D1F25; --ink:#F1F0EC; --sub:#A2A099;
+    --line:#31333B; --line-strong:#40434C;
+    --pagi-bg:#3A2E12; --siang-bg:#0F2E2A; --malam-bg:#20233F;
+    --cuti-bg:#132C16; --off-bg:#24262C;
+  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); height:100%; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100%;
+    background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header.top{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:30;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    padding:18px 20px 0;
+  }
+  .brand{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .brand h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:22px; letter-spacing:-0.01em; margin:0;
+  }
+  .brand .range{ color:var(--sub); font-size:13px; font-variant-numeric: tabular-nums; }
 
+  .sync-row{
+    display:flex; align-items:center; gap:7px;
+    font-size:12px; color:var(--sub); margin-top:6px;
+  }
+  .sync-dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--off); flex:none;
+  }
+  .sync-row.online .sync-dot{ background:var(--siang); }
+  .sync-row.denied .sync-dot{ background:var(--accent); }
+  .sync-row.stale .sync-dot{ background:var(--pagi); }
+  .sync-row a.reconnect{ color:var(--accent); text-decoration:underline; margin-left:2px; }
+
+  .view-tabs{ display:flex; gap:4px; margin-top:16px; }
+  .view-tabs button{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+    padding:10px 16px; border:none; background:none; color:var(--sub);
+    cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .view-tabs button.active{ color:var(--ink); border-bottom-color:var(--accent); }
+
+  main{ padding:20px 20px 60px; max-width:1400px; margin:0 auto; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ---------- Dashboard ---------- */
+  .day-nav{
+    display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .day-nav button.arrow{
+    width:36px; height:36px; border-radius:10px; border:1px solid var(--line-strong);
+    background:var(--panel); color:var(--ink); font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .day-nav button.arrow:disabled{ opacity:0.35; cursor:not-allowed; }
+  select#daySelect{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
+    padding:9px 12px; border-radius:10px; border:1px solid var(--line-strong);
+    background:var(--panel); color:var(--ink);
+  }
+  .date-hero{
+    font-family:'Space Grotesk',sans-serif;
+    margin-bottom:20px;
+  }
+  .date-hero .big{
+    font-size:clamp(28px,5vw,42px); font-weight:700; letter-spacing:-0.01em; line-height:1.05;
+  }
+  .date-hero .sub{ color:var(--sub); font-size:14px; margin-top:4px; font-family:'Inter'; }
+
+  .stat-strip{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:26px;
+  }
+  .stat-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:14px 14px 12px;
+  }
+  .stat-card .n{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; line-height:1;
+  }
+  .stat-card .l{ font-size:12px; color:var(--sub); margin-top:6px; }
+  .stat-card.pagi .n{ color:var(--pagi); }
+  .stat-card.siang .n{ color:var(--siang); }
+  .stat-card.malam .n{ color:var(--malam); }
+  .stat-card.cuti .n{ color:var(--cuti); }
+  .stat-card.off .n{ color:var(--off); }
+
+  .shift-groups{ display:flex; flex-direction:column; gap:14px; }
+  .shift-block{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+  }
+  .shift-block .head{
+    display:flex; align-items:baseline; gap:10px; margin-bottom:10px;
+  }
+  .shift-block .code-badge{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px;
+    padding:3px 9px; border-radius:7px;
+  }
+  .shift-block .time{ font-size:12.5px; color:var(--sub); }
+  .shift-block .count{ margin-left:auto; font-size:12.5px; color:var(--sub); }
+  .people-chips{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chip{
+    display:flex; align-items:center; gap:6px;
+    border:1px solid var(--line); border-radius:999px;
+    padding:5px 11px 5px 5px; font-size:13px; background:var(--bg);
+  }
+  .chip .dot{ width:7px; height:7px; border-radius:50%; }
+  .chip .team{ color:var(--sub); font-size:11px; }
+
+  .off-section{ margin-top:18px; }
+  .off-section .title{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    color:var(--sub); margin-bottom:8px;
+  }
+
+  .team-block .head{
+    display:flex; align-items:baseline; gap:10px; margin-bottom:12px; flex-wrap:wrap;
+  }
+  .team-block .head .name{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px;
+  }
+  .team-block .head .summary{ font-size:12.5px; color:var(--sub); }
+  .person-lines{ display:flex; flex-direction:column; }
+  .person-line{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 0; border-top:1px solid var(--line);
+  }
+  .person-line:first-child{ border-top:none; }
+  .person-line .pname{ font-size:13.5px; font-weight:600; min-width:90px; }
+  .person-line .ptime{ font-size:12px; color:var(--sub); margin-left:auto; }
+  .person-line .pbadge{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px;
+    padding:3px 9px; border-radius:7px;
+  }
+
+  /* ---------- Table view ---------- */
+  .table-controls{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px;
+  }
+  .team-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .team-tabs button{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    padding:7px 13px; border-radius:999px; border:1px solid var(--line-strong);
+    background:var(--panel); color:var(--ink); cursor:pointer;
+  }
+  .team-tabs button.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .search-wrap{ position:relative; margin-left:auto; }
+  input#search{
+    font-family:'Inter'; font-size:14px; padding:8px 12px 8px 32px;
+    border-radius:10px; border:1px solid var(--line-strong);
+    background:var(--panel); color:var(--ink); width:180px;
+  }
+  .search-wrap svg{ position:absolute; left:10px; top:9px; opacity:0.5; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-bottom:16px; font-size:12px; color:var(--sub); }
+  .legend .item{ display:flex; align-items:center; gap:6px; }
+  .swatch{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--panel); }
+  table{ border-collapse:separate; border-spacing:0; min-width:100%; }
+  thead th{
+    position:sticky; top:0; z-index:5; background:var(--panel);
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; color:var(--sub);
+    text-align:center; padding:8px 6px; border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  thead tr.daynames th{ font-size:10px; font-weight:500; color:var(--sub); padding-top:0; padding-bottom:8px; top:34px; }
+  th.name-col, td.name-col{
+    position:sticky; left:0; z-index:6; background:var(--panel);
+    text-align:left; border-right:1px solid var(--line); padding-left:14px !important; min-width:130px;
+  }
+  thead th.name-col{ z-index:8; }
+  tbody tr.team-row td{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.02em;
+    background:var(--bg); padding:9px 14px; border-bottom:1px solid var(--line);
+    border-top:1px solid var(--line); color:var(--ink);
+  }
+  tbody tr.person-row td{ padding:6px; text-align:center; border-bottom:1px solid var(--line); font-size:12px; }
+  tbody tr.person-row td.name-col{ font-weight:600; font-size:13px; padding-top:8px; padding-bottom:8px; }
+  tbody tr.person-row:hover td{ filter:brightness(0.97); }
+  .cell{ display:inline-flex; min-width:34px; padding:4px 3px; border-radius:6px; font-weight:600; justify-content:center; }
+  .cell.pagi{ background:var(--pagi-bg); color:var(--pagi); }
+  .cell.siang{ background:var(--siang-bg); color:var(--siang); }
+  .cell.malam{ background:var(--malam-bg); color:var(--malam); }
+  .cell.cuti{ background:var(--cuti-bg); color:var(--cuti); }
+  .cell.off{ background:var(--off-bg); color:var(--off); }
+  .cell.empty{ opacity:0.25; }
+  .weekend-col{ background:rgba(0,0,0,0.02); }
+  :root[data-theme="dark"] .weekend-col{ background:rgba(255,255,255,0.03); }
+  .hidden{ display:none !important; }
+  .empty-state{ padding:40px 20px; text-align:center; color:var(--sub); font-size:14px; }
+
+  footer{ max-width:1400px; margin:0 auto; padding:6px 20px 30px; color:var(--sub); font-size:12px; }
+
+  @media (max-width:760px){
+    .stat-strip{ grid-template-columns:repeat(3,1fr); }
+    .stat-strip .stat-card:nth-child(4), .stat-strip .stat-card:nth-child(5){ grid-column:span 1; }
+  }
+  @media (max-width:640px){
+    header.top{ padding:14px 14px 0; }
+    main{ padding:14px 14px 50px; }
+    .brand h1{ font-size:19px; }
+    .search-wrap{ margin-left:0; width:100%; }
+    input#search{ width:100%; }
+    .table-controls{ flex-direction:column; align-items:stretch; }
+    .stat-strip{ grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>Jadwal Fantastic 4</h1>
+    <span class="range" id="rangeLabel">21 Sep — 20 Okt 2026</span>
+  </div>
+  <div class="sync-row" id="syncRow"><span class="sync-dot" id="syncDot"></span><span id="syncText"></span></div>
+  <div class="view-tabs">
+    <button id="tabDash" class="active">Dasbor Harian</button>
+    <button id="tabTable">Tabel Bulanan</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Dashboard view -->
+  <section class="view active" id="viewDash">
+    <div class="day-nav">
+      <button class="arrow" id="prevDay" aria-label="Hari sebelumnya">‹</button>
+      <select id="daySelect"></select>
+      <button class="arrow" id="nextDay" aria-label="Hari berikutnya">›</button>
+    </div>
+
+    <div class="date-hero">
+      <div class="big" id="heroDate"></div>
+      <div class="sub" id="heroSub"></div>
+    </div>
+
+    <div class="stat-strip" id="statStrip"></div>
+
+    <div class="shift-groups" id="shiftGroups"></div>
+  </section>
+
+  <!-- Table view -->
+  <section class="view" id="viewTable">
+    <div class="table-controls">
+      <div class="team-tabs" id="teamTabs"></div>
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search" placeholder="Cari nama…">
+      </div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="table-scroll">
+      <table id="scheduleTable">
+        <thead>
+          <tr id="dateRow"></tr>
+          <tr class="daynames" id="dayRow"></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state hidden" id="emptyState">Tidak ada nama yang cocok.</div>
+  </section>
+
+</main>
+
+<footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X libur</footer>
+
+<script>
+const DATA = {"dates": ["21-Sep", "22-Sep", "23-Sep", "24-Sep", "25-Sep", "26-Sep", "27-Sep", "28-Sep", "29-Sep", "30-Sep", "1-Oct", "2-Oct", "3-Oct", "4-Oct", "5-Oct", "6-Oct", "7-Oct", "8-Oct", "9-Oct", "10-Oct", "11-Oct", "12-Oct", "13-Oct", "14-Oct", "15-Oct", "16-Oct", "17-Oct", "18-Oct", "19-Oct", "20-Oct"], "days": ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU", "MINGGU", "SENIN", "SELASA"], "teams": {"TIM FC": {"WYNDA": ["X", "EG", "CF", "CF", "CG", "CG", "CG", "EG", "X", "CF", "CF", "DN", "DN", "DN", "X", "CF", "CF", "CG", "CG", "CG", "CG", "X", "FP", "DN", "DN", "DN", "DN", "DN", "AL", "EG"], "YOHAN": ["EG", "X", "FP", "DN", "DN", "DN", "DN", "X", "CL", "CG", "CG", "CF", "CF", "CF", "CF", "X", "FP", "DN", "DN", "DN", "DN", "FP", "X", "CF", "CF", "CF", "CF", "CF", "CF", "AL"], "SUCI": ["DN", "FP", "X", "EG", "CF", "CF", "CF", "CF", "CF", "X", "FP", "DN", "DN", "DN", "DN", "DN", "X", "CF", "CF", "CF", "CF", "CF", "CF", "X", "FP", "DN", "DN", "DN", "DN", "DN"], "ACA": ["CF", "CF", "EG", "X", "FP", "DN", "DN", "DN", "DN", "DN", "X", "CG", "CG", "CG", "EG", "CG", "CG", "X", "DN", "DN", "DN", "DN", "DN", "FP", "X", "CG", "CG", "CG", "CG", "CG"], "MULAN": ["DN", "X", "X", "CL", "CG", "CG", "CL", "X", "CG", "CG", "CG", "X", "CG", "X", "DN", "DN", "X", "X", "X", "CG", "X", "CG", "CG", "X", "X", "X", "X", "X", "X", "X"], "ERDI": ["X", "DN", "DN", "DN", "DN", "X", "DN", "DN", "DN", "DN", "DN", "X", "X", "DN", "X", "X", "DN", "DN", "X", "X", "DN", "X", "X", "CG", "CG", "X", "X", "X", "DN", "DN"], "ALISHA": ["X", "X", "X", "X", "CL", "CL", "CG", "X", "X", "X", "X", "CL", "CL", "CG", "X", "X", "X", "X", "CL", "CL", "CG", "X", "X", "X", "X", "CL", "CL", "CL", "X", "X"]}, "TIM RAMBI": {"BAHRI": ["X", "X", "X", "X", "X", "DN", "DN", "DN", "X", "X", "X", "DN", "DN", "DN", "X", "X", "X", "DN", "DN", "DN", "DN", "X", "X", "CF", "CF", "X", "X", "X", "CF", "X"], "ZAHRA": ["CF", "CF", "CF", "CF", "X", "X", "X", "CF", "CF", "CF", "CF", "X", "X", "X", "DN", "DN", "DN", "X", "X", "X", "X", "CF", "CF", "X", "DN", "DN", "DN", "X", "X", "CF"], "NAZRIL": ["DN", "DN", "DN", "DN", "DN", "X", "X", "X", "DN", "DN", "DN", "X", "X", "X", "CF", "CF", "CF", "CF", "X", "X", "X", "DN", "DN", "DN", "X", "X", "X", "X", "X", "X"], "ANISA": ["X", "X", "X", "X", "CF", "CF", "CF", "X", "X", "X", "X", "CF", "CF", "CF", "X", "X", "X", "X", "CF", "CF", "CF", "X", "X", "X", "X", "CF", "CF", "CF", "X", "X"], "ATIN": ["DN", "X", "X", "CL", "CG", "CL", "CL", "X", "CG", "CG", "X", "CG", "CG", "CG", "X", "X", "X", "X", "DN", "DN", "DN", "X", "X", "X", "X", "X", "X", "DN", "DN", "DN"]}, "TIM ES CREAM": {"BOY": ["CG", "CG", "CG", "CG", "X", "X", "X", "X", "DN", "X", "CG", "X", "X", "DN", "DN", "X", "CG", "CG", "X", "X", "DN", "DN", "X", "CG", "CG", "X", "DN", "DN", "X", "X"], "WYNDI": ["X", "X", "X", "X", "X", "DN", "DN", "CG", "CG", "CG", "DN", "DN", "DN", "X", "X", "DN", "DN", "X", "X", "DN", "X", "X", "DN", "DN", "X", "X", "X", "X", "CG", "CG"], "AAL": ["DN", "DN", "DN", "DN", "DN", "X", "X", "DN", "X", "DN", "X", "X", "X", "X", "CG", "CG", "X", "DN", "DN", "X", "X", "CG", "CG", "X", "DN", "DN", "X", "X", "DN", "DN"], "ALINTA": ["X", "X", "X", "X", "CG", "CG", "CG", "X", "X", "X", "X", "CG", "CG", "CG", "X", "X", "X", "X", "CG", "CG", "CG", "X", "X", "X", "X", "CG", "CG", "CG", "X", "X"]}, "TIM ANEKA ODEN": {"ASHILA": ["X", "EF", "CF", "CF", "CF", "CF", "CF", "X", "AL", "CG", "FP", "DN", "DN", "DN", "X", "CF", "CF", "CF", "EF", "CF", "CF", "X", "AL", "DN", "DN", "FP", "DN", "DN", "AL", "CF"], "VIGO": ["CF", "CL", "DN", "CL", "X", "DN", "DN", "CL", "CF", "CF", "CF", "X", "X", "X", "DN", "X", "X", "X", "X", "DN", "DN", "DN", "DN", "X", "CF", "CF", "X", "X", "DN", "DN"], "DILA": ["CL", "X", "X", "X", "X", "CL", "CL", "CF", "CL", "DN", "X", "CF", "CF", "CF", "CF", "X", "X", "X", "X", "X", "X", "CF", "CF", "CF", "X", "X", "CF", "CF", "CF", "X"], "GEISYA": ["X", "X", "X", "X", "CK", "CG", "CG", "X", "X", "X", "X", "CK", "CK", "CK", "X", "X", "X", "X", "CK", "CK", "CK", "X", "X", "X", "X", "CK", "CK", "CK", "X", "X"], "HAMDAN": ["X", "X", "CL", "X", "X", "X", "X", "X", "X", "CL", "CL", "X", "CL", "CL", "X", "DN", "DN", "DN", "DN", "CL", "CL", "X", "X", "X", "X", "X", "CL", "CL", "X", "X"], "IQSAN": ["FP", "DN", "X", "DN", "DN", "DN", "DN", "DN", "DN", "X", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}}};
+
+const SHIFT_INFO = {
+  CF: {group:'pagi', time:'06:00–14:00'},
+  CG: {group:'pagi', time:'07:00–15:00'},
+  EF: {group:'pagi', time:'06:00–12:00'},
+  EG: {group:'pagi', time:'07:00–13:00'},
+  CK: {group:'siang', time:'11:00–19:00'},
+  CL: {group:'siang', time:'12:00–20:00'},
+  DN: {group:'malam', time:'14:30–22:30'},
+  FP: {group:'malam', time:'16:30–22:30'},
+  AL: {group:'cuti', time:'Cuti'},
+  X: {group:'off', time:'Libur'},
+};
+const GROUP_LABEL = {pagi:'Pagi', siang:'Siang', malam:'Malam', cuti:'Cuti', off:'Libur'};
+const GROUP_ORDER = ['pagi','siang','malam','cuti','off'];
+const DAY_FULL = {SENIN:'Senin', SELASA:'Selasa', RABU:'Rabu', KAMIS:'Kamis', JUMAT:'Jumat', SABTU:'Sabtu', MINGGU:'Minggu'};
+
+let activeTeam = 'ALL';
+let dayIndex = 0;
+
+/* ---------- shared ---------- */
+function isWeekend(day){ return day === 'SABTU' || day === 'MINGGU'; }
+
+/* ================= DASHBOARD ================= */
+function buildDaySelect(){
+  const sel = document.getElementById('daySelect');
+  sel.innerHTML = '';
+  DATA.dates.forEach((d,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${DAY_FULL[DATA.days[i]]}, ${d}`;
+    sel.appendChild(opt);
+  });
+  sel.value = dayIndex;
+  sel.addEventListener('change', () => { dayIndex = parseInt(sel.value,10); renderDashboard(); });
+}
+
+function renderDashboard(){
+  document.getElementById('daySelect').value = dayIndex;
+  document.getElementById('prevDay').disabled = dayIndex === 0;
+  document.getElementById('nextDay').disabled = dayIndex === DATA.dates.length - 1;
+
+  const dayName = DATA.days[dayIndex];
+  document.getElementById('heroDate').textContent = `${DAY_FULL[dayName]}, ${DATA.dates[dayIndex]}`;
+  document.getElementById('heroSub').textContent = isWeekend(dayName) ? 'Akhir pekan' : 'Hari kerja';
+
+  // overall stat strip (across all teams)
+  const byGroup = {pagi:[], siang:[], malam:[], cuti:[], off:[]};
+  Object.values(DATA.teams).forEach(people => {
+    Object.values(people).forEach(shifts => {
+      const code = shifts[dayIndex];
+      const info = SHIFT_INFO[code];
+      if(info) byGroup[info.group].push(code);
+    });
+  });
+  const strip = document.getElementById('statStrip');
+  strip.innerHTML = '';
+  GROUP_ORDER.forEach(g => {
+    const card = document.createElement('div');
+    card.className = `stat-card ${g}`;
+    card.innerHTML = `<div class="n">${byGroup[g].length}</div><div class="l">${GROUP_LABEL[g]}</div>`;
+    strip.appendChild(card);
+  });
+
+  // per-team breakdown
+  const codeOrder = ['CF','EF','CG','EG','CK','CL','DN','FP','AL','X'];
+  const groupsEl = document.getElementById('shiftGroups');
+  groupsEl.innerHTML = '';
+
+  Object.entries(DATA.teams).forEach(([teamName, people]) => {
+    const entries = Object.entries(people)
+      .map(([pname, shifts]) => ({name:pname, code:shifts[dayIndex]}))
+      .filter(e => e.code)
+      .sort((a,b) => codeOrder.indexOf(a.code) - codeOrder.indexOf(b.code));
+
+    if(entries.length === 0) return;
+
+    const working = entries.filter(e => e.code !== 'X' && e.code !== 'AL').length;
+    const resting = entries.length - working;
+
+    const block = document.createElement('div');
+    block.className = 'team-block shift-block';
+    const head = document.createElement('div');
+    head.className = 'head';
+    head.innerHTML = `<span class="name">${teamName}</span><span class="summary">${working} kerja · ${resting} libur/cuti</span>`;
+    block.appendChild(head);
+
+    const lines = document.createElement('div');
+    lines.className = 'person-lines';
+    entries.forEach(e => {
+      const info = SHIFT_INFO[e.code];
+      const line = document.createElement('div');
+      line.className = 'person-line';
+      line.innerHTML = `<span class="pname">${e.name}</span><span class="pbadge cell ${info.group}">${e.code}</span><span class="ptime">${info.time}</span>`;
+      lines.appendChild(line);
+    });
+    block.appendChild(lines);
+    groupsEl.appendChild(block);
+  });
+}
+
+function teamShort(t){
+  return t.replace('TIM ', '');
+}
+
+document.getElementById('prevDay').addEventListener('click', () => { if(dayIndex>0){ dayIndex--; renderDashboard(); } });
+document.getElementById('nextDay').addEventListener('click', () => { if(dayIndex<DATA.dates.length-1){ dayIndex++; renderDashboard(); } });
+
+/* ================= TABLE VIEW ================= */
+function buildLegend(){
+  const el = document.getElementById('legend');
+  el.innerHTML = '';
+  GROUP_ORDER.forEach(g => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `<span class="swatch cell ${g}" style="min-width:11px;padding:0;"></span><span>${GROUP_LABEL[g]}</span>`;
+    el.appendChild(div);
+  });
+}
+
+function buildTabs(){
+  const wrap = document.getElementById('teamTabs');
+  wrap.innerHTML = '';
+  const names = ['ALL', ...Object.keys(DATA.teams)];
+  names.forEach(name => {
+    const btn = document.createElement('button');
+    btn.textContent = name === 'ALL' ? 'Semua Tim' : name;
+    btn.className = name === activeTeam ? 'active' : '';
+    btn.onclick = () => { activeTeam = name; buildTabs(); renderTable(); };
+    wrap.appendChild(btn);
+  });
+}
+
+function buildHeader(){
+  const dateRow = document.getElementById('dateRow');
+  const dayRow = document.getElementById('dayRow');
+  dateRow.innerHTML = '<th class="name-col">Nama</th>';
+  dayRow.innerHTML = '<th class="name-col"></th>';
+  DATA.dates.forEach((d,i) => {
+    const th1 = document.createElement('th');
+    th1.textContent = d;
+    if(isWeekend(DATA.days[i])) th1.classList.add('weekend-col');
+    dateRow.appendChild(th1);
+    const th2 = document.createElement('th');
+    th2.textContent = DATA.days[i].slice(0,3);
+    if(isWeekend(DATA.days[i])) th2.classList.add('weekend-col');
+    dayRow.appendChild(th2);
+  });
+}
+
+function cellHTML(code, dayIsWeekend){
+  const wknd = dayIsWeekend ? ' weekend-col' : '';
+  if(!code) return `<td class="${wknd}"><span class="cell empty">–</span></td>`;
+  const info = SHIFT_INFO[code];
+  if(!info) return `<td class="${wknd}"><span class="cell">${code}</span></td>`;
+  return `<td class="${wknd}" title="${code} · ${info.time}"><span class="cell ${info.group}">${code}</span></td>`;
+}
+
+function renderTable(){
+  const q = document.getElementById('search').value.trim().toUpperCase();
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  let shown = 0;
+
+  Object.entries(DATA.teams).forEach(([teamName, people]) => {
+    if(activeTeam !== 'ALL' && activeTeam !== teamName) return;
+    const matchedPeople = Object.entries(people).filter(([pname]) => !q || pname.toUpperCase().includes(q));
+    if(matchedPeople.length === 0) return;
+
+    const teamRow = document.createElement('tr');
+    teamRow.className = 'team-row';
+    const teamTd = document.createElement('td');
+    teamTd.className = 'name-col';
+    teamTd.textContent = teamName;
+    teamRow.appendChild(teamTd);
+    DATA.dates.forEach(() => teamRow.appendChild(document.createElement('td')));
+    tbody.appendChild(teamRow);
+
+    matchedPeople.forEach(([pname, shifts]) => {
+      shown++;
+      const tr = document.createElement('tr');
+      tr.className = 'person-row';
+      let rowHTML = `<td class="name-col">${pname}</td>`;
+      shifts.forEach((code, i) => { rowHTML += cellHTML(code, isWeekend(DATA.days[i])); });
+      tr.innerHTML = rowHTML;
+      tbody.appendChild(tr);
+    });
+  });
+
+  document.getElementById('emptyState').classList.toggle('hidden', shown > 0);
+  document.getElementById('scheduleTable').classList.toggle('hidden', shown === 0);
+}
+
+document.getElementById('search').addEventListener('input', renderTable);
+
+/* ================= VIEW SWITCH ================= */
+const tabDash = document.getElementById('tabDash');
+const tabTable = document.getElementById('tabTable');
+const viewDash = document.getElementById('viewDash');
+const viewTable = document.getElementById('viewTable');
+
+tabDash.addEventListener('click', () => {
+  tabDash.classList.add('active'); tabTable.classList.remove('active');
+  viewDash.classList.add('active'); viewTable.classList.remove('active');
+});
+tabTable.addEventListener('click', () => {
+  tabTable.classList.add('active'); tabDash.classList.remove('active');
+  viewTable.classList.add('active'); viewDash.classList.remove('active');
+});
+
+/* ================= LIVE SYNC (published Google Sheet, no login) ================= */
+const SHEET_ID = '142WHZSYfCEi_rVOye0bBGHwaJA736ZlYeeH8ptoTnZs';
+const SHEET_TAB_NAME = 'Sheet1';
+const PUBLISH_KEY = '2PACX-1vTuv0DHS_mAjL1WVEmNtH1DouA6AZe5cmd9is5C9vlDuy2uNrv_0W9i87q8ra6u5xOx8RTbqZ6Rf_Oc';
+const SYNC_INTERVAL_MS = 60000;
+
+const CSV_SOURCES = [
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB_NAME)}`,
+  `https://docs.google.com/spreadsheets/d/e/${PUBLISH_KEY}/pub?output=csv`,
+];
+
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ''; }
+      else if(c === '\n' || c === '\r'){
+        if(c === '\r' && text[i+1] === '\n') i++;
+        row.push(field); field = '';
+        rows.push(row); row = [];
+      } else field += c;
+    }
+  }
+  if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+function parseSheetRows(rows){
+  const teams = {};
+  let dates = null, days = null, stage = 'idle', currentTeam = null;
+
+  for(const cellsRaw of rows){
+    const cells = cellsRaw.map(c => c.trim());
+    const nonEmpty = cells.filter(c => c !== '');
+    if(nonEmpty.length === 0) continue;
+    const first = cells[0];
+
+    if(nonEmpty.length === 1 && /^TIM\s/i.test(first)){
+      currentTeam = first;
+      teams[currentTeam] = {};
+      stage = 'awaitDates';
+      continue;
+    }
+    if(stage === 'awaitDates' && /NAMA/i.test(first)){
+      if(!dates) dates = cells.slice(1);
+      stage = 'awaitDays';
+      continue;
+    }
+    if(stage === 'awaitDays' && /NAMA/i.test(first)){
+      if(!days) days = cells.slice(1);
+      stage = 'people';
+      continue;
+    }
+    if(stage === 'people' && currentTeam && first !== '' && !/^KODE SHIFT/i.test(first)){
+      teams[currentTeam][first] = cells.slice(1);
+    }
+  }
+
+  if(dates){
+    let len = dates.length;
+    while(len > 0 && dates[len-1] === '') len--;
+    dates = dates.slice(0, len);
+    if(days) days = days.slice(0, len);
+    Object.values(teams).forEach(people => {
+      Object.keys(people).forEach(p => {
+        const arr = people[p].slice(0, len);
+        while(arr.length < len) arr.push('');
+        people[p] = arr;
+      });
+    });
+  }
+  return {dates, days, teams};
+}
+
+function refreshAllViews(){
+  dayIndex = Math.min(dayIndex, DATA.dates.length - 1);
+  document.getElementById('rangeLabel').textContent = `${DATA.dates[0]} — ${DATA.dates[DATA.dates.length-1]}`;
+  buildDaySelect();
+  renderDashboard();
+  buildTabs();
+  buildHeader();
+  renderTable();
+}
+
+function setSyncStatus(state, text){
+  const row = document.getElementById('syncRow');
+  row.className = 'sync-row ' + state;
+  document.getElementById('syncText').textContent = text;
+}
+
+function fmtTime(d){
+  return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+}
+
+async function fetchLatestData(){
+  for(const base of CSV_SOURCES){
+    try{
+      const url = base + (base.includes('?') ? '&' : '?') + 'cachebust=' + Date.now();
+      const res = await fetch(url, {cache: 'no-store'});
+      if(!res.ok) continue;
+      const text = await res.text();
+      if(!text || !text.trim()) continue;
+      const parsed = parseSheetRows(parseCSV(text));
+      if(parsed.dates && parsed.days && Object.keys(parsed.teams).length > 0){
+        return parsed;
+      }
+    }catch(e){ /* try next source */ }
+  }
+  return null;
+}
+
+let lastSyncOk = false;
+
+async function syncOnce(){
+  const parsed = await fetchLatestData();
+  if(parsed){
+    DATA.dates = parsed.dates;
+    DATA.days = parsed.days;
+    DATA.teams = parsed.teams;
+    refreshAllViews();
+    lastSyncOk = true;
+    setSyncStatus('online', `Tersambung ke spreadsheet · diperbarui ${fmtTime(new Date())}`);
+  } else if(lastSyncOk){
+    setSyncStatus('stale', 'Gagal menyegarkan sementara — menampilkan data terakhir yang berhasil disinkronkan.');
+  } else {
+    setSyncStatus('denied', 'Belum berhasil membaca spreadsheet — menampilkan data bawaan. Pastikan sheet sudah "Published to web".');
+  }
+}
+
+/* ================= INIT ================= */
+buildDaySelect();
+renderDashboard();
+buildLegend();
+buildTabs();
+buildHeader();
+renderTable();
+document.getElementById('rangeLabel').textContent = `${DATA.dates[0]} — ${DATA.dates[DATA.dates.length-1]}`;
+setSyncStatus('', 'Menyambungkan ke spreadsheet…');
+syncOnce();
+setInterval(syncOnce, SYNC_INTERVAL_MS);
+</script>
+</body>
+</html>
