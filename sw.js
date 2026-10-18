@@ -3,7 +3,7 @@
  * - Data spreadsheet (CSV): network-first, cadangan data terakhir saat offline
  * Naikkan nomor VERSION jika ingin memaksa semua perangkat membuang cache lama.
  */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = 'jadwal-f4-' + VERSION;
 const SCOPE = self.registration.scope;
 const SHELL_URL = new URL('index.html', SCOPE).href;
