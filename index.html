@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#120805">
+<meta name="theme-color" content="#f3e3c3">
 <meta name="description" content="Jadwal shift harian dan bulanan Fantastic 4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,86 +12,79 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 <title>Jadwal Fantastic 4</title>
 <style>
-:root{color-scheme:dark;--bg:#120805;--panel:#1e0f09;--ink:#fff1e0;--sub:#c9a08a;--line:#4a2013;--accent:#ff5a00;--glow:#ffb300;--pagi:#ffc233;--siang:#3fd0c0;--malam:#b58cff;--cuti:#7bdc6a;--off:#8a6f63;--shadow:0 0 0 1px rgba(255,90,0,.12),0 8px 28px rgba(255,60,0,.14)}
-:root[data-theme=light]{color-scheme:light;--bg:#fff1e0;--panel:#fff;--ink:#2a0f06;--sub:#7a5546;--line:#f1d2b8;--accent:#d93a00;--glow:#b45309;--pagi:#b7791f;--siang:#0f8f86;--malam:#6d3fd0;--cuti:#2b8a3e;--off:#8a766b;--shadow:0 1px 2px rgba(42,15,6,.08),0 6px 18px rgba(217,58,0,.12)}
+:root{color-scheme:light;--bg:#f3e3c3;--panel:#faf3df;--ink:#1a1a2e;--sub:#6d6450;--line:#d9c79c;--bd:#1a1a2e;--sh:#1a1a2e;--accent:#f26a0f;--pagi:#f2a900;--siang:#2f55e0;--malam:#7b4fd6;--cuti:#2f9e55;--off:#9a8f78;--d:'Anton','Bebas Neue','Oswald','Arial Narrow',Impact,sans-serif}
+:root[data-theme=dark]{color-scheme:dark;--bg:#12122a;--panel:#1d1d40;--ink:#f6ecd4;--sub:#a9a3c4;--line:#34346a;--bd:#f6ecd4;--sh:#f26a0f;--pagi:#ffc233;--siang:#6f8bff;--malam:#b58cff;--cuti:#6ee7a8;--off:#8a86ad}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 button,select,input{font:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-header{padding:18px 20px 0;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{padding:16px 20px 12px;position:sticky;top:0;background:var(--bg);z-index:2;border-bottom:3px solid var(--bd)}
 .brand{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
-.brand h1{font-size:21px;margin:0;letter-spacing:-.02em;font-weight:800}
-.range{color:var(--sub);font-size:13px;margin-left:auto}
-.sync{color:var(--sub);font-size:12px;margin-top:6px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--off);margin-right:6px}
-.online .dot{background:var(--siang);box-shadow:0 0 0 3px color-mix(in srgb,var(--siang) 25%,transparent)}
-.denied .dot{background:#e5484d}
-.offline .dot{background:var(--pagi)}
-.tabs{display:flex;gap:4px;margin-top:14px}
-.tabs button{padding:10px 16px;border:0;border-bottom:3px solid transparent;background:none;color:var(--sub);cursor:pointer;font-weight:600}
-.tabs button.active{color:var(--accent);border-color:var(--accent)}
+.brand h1{font:400 26px/1 var(--d);margin:0;text-transform:uppercase;letter-spacing:.02em}
+.range{color:var(--sub);font-size:13px;margin-left:auto;font-weight:600}
+.sync{color:var(--sub);font-size:12px;margin-top:8px;font-weight:600}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--off);margin-right:6px;border:2px solid var(--bd)}
+.online .dot{background:var(--cuti)}.denied .dot{background:#e5484d}.offline .dot{background:var(--pagi)}
+.tabs{display:flex;gap:10px;margin-top:12px}
+.tabs button{padding:8px 16px;border:3px solid var(--bd);border-radius:12px;background:var(--panel);color:var(--ink);cursor:pointer;font:400 16px/1 var(--d);text-transform:uppercase;letter-spacing:.04em}
+.tabs button.active{background:var(--accent);color:#1a1a2e;box-shadow:3px 3px 0 var(--sh)}
 main{padding:20px;max-width:1400px;margin:auto}
 .view{display:none}.view.active{display:block}
-.nav{display:flex;gap:10px;align-items:center;margin-bottom:20px}
-.nav button,select,input{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:9px 12px}
-.nav select{flex:1;max-width:300px}
-.nav button{font-size:18px;width:40px;cursor:pointer}
-.nav button:disabled{opacity:.35;cursor:default}
-.hero{font-size:clamp(26px,5vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:20px;padding-left:14px;border-left:5px solid var(--accent)}
-.sub{font-size:14px;color:var(--sub);font-weight:500;letter-spacing:0;margin-top:6px}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
-.stat,.team{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
-.stat{border-top:4px solid var(--off)}
-.stat b{font-size:28px;line-height:1}
-.stat small{display:block;color:var(--sub);margin-top:6px;font-weight:600}
+.nav{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.nav button,select,input{border:3px solid var(--bd);border-radius:14px;background:var(--panel);color:var(--ink);padding:9px 12px}
+.nav select{flex:1;min-width:0;font-weight:700;height:48px}
+.nav button{width:48px;height:48px;font-size:24px;line-height:1;cursor:pointer;box-shadow:4px 4px 0 var(--sh);padding:0}
+.nav button:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--sh)}
+.nav button:disabled{opacity:.35;cursor:default;box-shadow:none}
+.hero{position:relative;overflow:hidden;background-color:var(--accent);color:#1a1a2e;border:3px solid var(--bd);border-radius:22px;box-shadow:6px 6px 0 var(--sh);padding:20px 20px 24px;margin-bottom:22px;min-height:150px;background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><polyline points='104.0,100.0 104.3,100.2 104.6,100.5 104.8,100.8 105.0,101.2 105.3,101.5 105.4,101.9 105.6,102.3 105.7,102.8 105.8,103.3 105.9,103.7 105.9,104.2 105.9,104.7 105.8,105.3 105.7,105.8 105.6,106.3 105.4,106.9 105.1,107.4 104.9,107.9 104.5,108.5 104.2,109.0 103.8,109.5 103.3,109.9 102.8,110.4 102.3,110.8 101.7,111.2 101.1,111.6 100.5,112.0 99.8,112.3 99.1,112.5 98.3,112.7 97.5,112.9 96.7,113.0 95.9,113.1 95.1,113.1 94.2,113.1 93.4,113.0 92.5,112.9 91.6,112.7 90.7,112.4 89.8,112.1 89.0,111.7 88.1,111.3 87.3,110.8 86.4,110.2 85.6,109.6 84.9,108.9 84.1,108.2 83.4,107.4 82.7,106.5 82.1,105.6 81.5,104.7 81.0,103.7 80.5,102.6 80.1,101.6 79.8,100.4 79.5,99.3 79.3,98.1 79.1,96.9 79.0,95.6 79.0,94.4 79.1,93.1 79.3,91.8 79.5,90.5 79.8,89.3 80.2,88.0 80.7,86.7 81.2,85.5 81.8,84.2 82.6,83.0 83.3,81.8 84.2,80.7 85.2,79.6 86.2,78.5 87.3,77.5 88.4,76.6 89.7,75.7 91.0,74.9 92.3,74.1 93.7,73.4 95.2,72.8 96.7,72.3 98.3,71.9 99.9,71.5 101.5,71.3 103.2,71.1 104.8,71.0 106.5,71.1 108.3,71.2 110.0,71.4 111.7,71.8 113.4,72.2 115.1,72.8 116.8,73.4 118.4,74.2 120.0,75.0 121.6,76.0 123.2,77.0 124.6,78.2 126.1,79.4 127.4,80.8 128.7,82.2 130.0,83.7 131.1,85.3 132.2,87.0 133.1,88.8 134.0,90.6 134.8,92.5 135.4,94.4 136.0,96.4 136.4,98.4 136.7,100.5 136.9,102.6 137.0,104.7 137.0,106.9 136.8,109.0 136.5,111.2 136.1,113.3 135.6,115.5 134.9,117.6 134.1,119.7 133.2,121.8 132.1,123.8 131.0,125.8 129.7,127.7 128.3,129.5 126.7,131.3 125.1,133.0 123.3,134.6 121.5,136.1 119.6,137.6 117.5,138.9 115.4,140.1 113.2,141.2 110.9,142.1 108.5,143.0 106.1,143.7 103.7,144.3 101.2,144.7 98.6,145.0 96.1,145.1 93.5,145.1 90.9,145.0 88.2,144.7 85.6,144.2 83.0,143.6 80.5,142.8 77.9,141.9 75.5,140.8 73.0,139.6 70.6,138.3 68.3,136.8 66.1,135.1 63.9,133.3 61.9,131.4 59.9,129.4 58.1,127.2 56.3,125.0 54.7,122.6 53.2,120.1 51.9,117.5 50.7,114.8 49.6,112.1 48.8,109.3 48.0,106.4 47.4,103.4 47.0,100.5 46.8,97.4 46.7,94.4 46.9,91.3 47.1,88.3 47.6,85.2 48.2,82.2 49.1,79.2 50.1,76.2 51.2,73.2 52.6,70.4 54.1,67.6 55.8,64.8 57.6,62.2 59.6,59.6 61.8,57.2 64.1,54.9 66.5,52.7 69.1,50.6 71.8,48.7 74.7,46.9 77.6,45.2 80.6,43.8 83.8,42.5 87.0,41.4 90.3,40.4 93.7,39.7 97.1,39.1 100.5,38.8 104.0,38.6 107.5,38.6 111.1,38.9 114.6,39.3 118.1,40.0 121.5,40.8 125.0,41.9 128.4,43.1 131.7,44.5 135.0,46.2 138.1,48.0 141.2,50.0 144.2,52.2 147.0,54.6 149.7,57.1 152.3,59.9 154.8,62.7 157.0,65.7 159.1,68.9 161.1,72.2 162.8,75.6 164.4,79.1 165.8,82.7 166.9,86.4 167.9,90.2 168.6,94.0 169.2,97.9 169.5,101.8 169.5,105.8 169.4,109.8 169.0,113.7 168.4,117.7 167.6,121.6 166.5,125.5 165.2,129.4 163.7,133.2 162.0,136.9 160.0,140.5 157.9,144.0 155.5,147.4 153.0,150.7 150.2,153.8 147.3,156.8 144.1,159.6 140.8,162.3 137.4,164.8 133.8,167.0 130.1,169.1 126.2,171.0 122.2,172.7 118.1,174.1 114.0,175.3 109.7,176.2 105.4,177.0 101.0,177.4 96.6,177.7 92.2,177.6 87.7,177.4 83.3,176.8 78.9,176.0 74.5,175.0 70.2,173.7 66.0,172.2 61.8,170.4 57.7,168.4 53.7,166.1 49.9,163.6 46.1,160.9 42.6,157.9 39.2,154.8 35.9,151.4 32.9,147.9 30.0,144.2 27.4,140.3 24.9,136.2 22.7,132.0 20.8,127.7 19.0,123.2 17.6,118.7 16.3,114.0 15.4,109.3 14.7,104.5 14.3,99.6 14.2,94.7 14.3,89.9 14.7,85.0 15.4,80.1 16.4,75.2 17.7,70.4 19.2,65.7 21.0,61.1 23.1,56.5 25.4,52.0 28.0,47.7 30.9,43.5 34.0,39.5 37.3,35.7 40.9,32.0 44.6,28.5 48.6,25.2 52.8,22.2 57.1,19.4 61.6,16.8 66.3,14.5 71.1,12.4 76.1,10.7 81.1,9.2 86.2,7.9 91.5,7.0 96.7,6.4 102.0,6.1 107.4,6.0 112.8,6.3 118.1,6.9 123.4,7.8 128.7,9.0 133.9,10.5 139.1,12.3 144.1,14.4 149.0,16.8 153.8,19.4 158.5,22.4 163.0,25.6 167.3,29.1 171.4,32.8 175.4,36.8 179.1,41.0 182.5,45.4 185.8,50.0 188.7,54.8 191.4,59.8 193.8,64.9 195.9,70.2 197.8,75.6 199.3,81.2 200.5,86.8 201.4,92.5 201.9,98.2 202.1,104.0 202.0,109.8 201.6,115.6 200.9,121.4 199.8,127.2 198.3,132.9 196.6,138.5 194.5,144.1 192.1,149.5 189.4,154.8 186.4,159.9 183.1,164.9 179.5,169.7 175.6,174.3 171.5,178.7 167.1,182.9 162.5,186.8 157.6,190.4 152.5,193.8 147.3,196.9 141.8,199.7 136.2,202.2 130.4,204.4 124.5,206.2 118.5,207.7 112.4,208.9 106.2,209.7 100.0,210.2' fill='none' stroke='%23c4560a' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>"),url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0L61 39L100 50L61 61L50 100L39 61L0 50L39 39Z' fill='%23c4560a'/><circle cx='50' cy='50' r='9' fill='%23f26a0f'/></svg>");background-repeat:no-repeat;background-position:right -30px top -40px,right 18px bottom 16px;background-size:260px,44px}
+.eyebrow{display:flex;align-items:center;gap:10px;font:400 18px/1 var(--d);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.seal{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:3px solid #1a1a2e;border-radius:50%;font:700 18px/1 system-ui,sans-serif;letter-spacing:0}
+#heroDate{font:400 clamp(34px,9vw,54px)/1.05 var(--d);text-transform:uppercase;letter-spacing:.01em;max-width:80%}
+.sub{font-size:14px;color:var(--sub);font-weight:600}
+.hero .sub{color:#1a1a2e;opacity:.8;font-size:16px;margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+.stat,.team{background:var(--panel);border:3px solid var(--bd);border-radius:18px;box-shadow:5px 5px 0 var(--sh);padding:14px}
 .pagi{--c:var(--pagi)}.siang{--c:var(--siang)}.malam{--c:var(--malam)}.cuti{--c:var(--cuti)}.off{--c:var(--off)}
-.stat.pagi,.stat.siang,.stat.malam,.stat.cuti,.stat.off{border-top-color:var(--c)}
-.stat b{color:var(--c,var(--ink))}
-.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
-.team h3{font-size:15px;margin:0 0 8px;font-weight:700}
-.person{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.stat{background:color-mix(in srgb,var(--c,var(--off)) 32%,var(--panel))}
+.stat b{font:400 34px/1 var(--d)}
+.stat small{display:block;margin-top:6px;font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.06em}
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.team h3{font:400 20px/1 var(--d);margin:0 0 8px;text-transform:uppercase;letter-spacing:.03em}
+.team h3::before{content:"";display:inline-block;width:18px;height:18px;margin-right:10px;vertical-align:-2px;background:var(--accent);clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%)}
+.person{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:2px solid var(--line)}
 .person:first-of-type{border-top:0}
-.person span:first-child{font-weight:600;min-width:90px}
-.badge{display:inline-block;padding:4px 10px;border-radius:7px;font-weight:700;font-size:13px;color:var(--c,var(--sub));background:color-mix(in srgb,var(--c,var(--off)) 15%,transparent)}
-.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;align-items:center}
-.controls button{border:1px solid var(--line);border-radius:20px;padding:7px 14px;background:var(--panel);color:var(--ink);cursor:pointer;margin:0 6px 6px 0}
-.controls button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.person span:first-child{font-weight:700;min-width:90px}
+.badge{display:inline-block;padding:3px 10px;border:2px solid var(--bd);border-radius:9px;font-weight:800;font-size:13px;color:var(--ink);background:color-mix(in srgb,var(--c,var(--off)) 40%,var(--panel))}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.controls button{border:3px solid var(--bd);border-radius:20px;padding:6px 14px;background:var(--panel);color:var(--ink);cursor:pointer;margin:0 6px 6px 0;font-weight:800}
+.controls button.active{background:var(--accent);color:#1a1a2e;box-shadow:3px 3px 0 var(--sh)}
 .search{margin-left:auto}
-.scroll{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow)}
+.scroll{overflow:auto;border:3px solid var(--bd);border-radius:18px;background:var(--panel);box-shadow:5px 5px 0 var(--sh)}
 table{border-collapse:collapse;min-width:100%}
-th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
-th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);min-width:130px;padding-left:12px}
-th{color:var(--sub);font-size:12px;font-weight:600}
-.teamrow td{font-weight:700;background:color-mix(in srgb,var(--accent) 10%,var(--panel))!important;color:var(--accent)}
+th,td{padding:7px 6px;border-bottom:2px solid var(--line);text-align:center;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);min-width:130px;padding-left:12px;font-weight:700}
+th{color:var(--sub);font-size:12px;font-weight:800}
+.teamrow td{background:color-mix(in srgb,var(--accent) 35%,var(--panel))!important;font:400 15px/1 var(--d);text-transform:uppercase;letter-spacing:.04em;color:var(--ink)}
 .empty{text-align:center;color:var(--sub);padding:35px}
 footer{padding:10px 20px 30px;color:var(--sub);font-size:12px}
-.icon,.install{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:8px 12px;font-size:13px;cursor:pointer}
-.icon{font-size:16px;line-height:1;padding:8px 11px}
+.icon,.install{border:3px solid var(--bd);border-radius:12px;background:var(--panel);color:var(--ink);padding:6px 11px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:3px 3px 0 var(--sh)}
+.icon{font-size:16px;line-height:1}
 .install[hidden]{display:none}
-header{padding-top:calc(18px + env(safe-area-inset-top))}
+.logo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:3px solid var(--bd)}
+.logo[hidden]{display:none}
+header{padding-top:calc(16px + env(safe-area-inset-top))}
 main{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
 footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
-@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}.stat:last-child{grid-column:span 2}.range{margin-left:0;width:100%;order:5}.search{margin-left:0;width:100%}.search input{width:100%}}
+@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}.stat:last-child{grid-column:span 2}.range{margin-left:0;width:100%;order:5}.search{margin-left:0;width:100%}.search input{width:100%}#heroDate{max-width:100%}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
-header{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 22%,var(--bg)),var(--bg));border-bottom:1px solid color-mix(in srgb,var(--accent) 45%,var(--line))}
-.brand h1{font-weight:800;letter-spacing:.01em}
-.brand h1::before{content:"";display:inline-block;width:24px;height:24px;margin-right:10px;vertical-align:-4px;border-radius:50%;background:radial-gradient(ellipse 13% 58% at 50% 50%,#000 94%,transparent 100%),radial-gradient(circle,#ffd24a 0,#ff6a00 55%,#d12600 100%);box-shadow:0 0 0 2px #000,0 0 16px 3px rgba(255,90,0,.7)}
-.online .dot{background:var(--siang);box-shadow:0 0 0 3px color-mix(in srgb,var(--siang) 30%,transparent),0 0 10px var(--siang)}
-.hero{border-left-color:var(--accent);text-shadow:0 0 22px color-mix(in srgb,var(--accent) 35%,transparent)}
-.stat{background:linear-gradient(180deg,color-mix(in srgb,var(--c,var(--off)) 10%,var(--panel)),var(--panel))}
-.stat b{text-shadow:0 0 14px color-mix(in srgb,var(--c,var(--off)) 45%,transparent)}
-.team{border-left:3px solid color-mix(in srgb,var(--accent) 70%,transparent)}
-.team h3{color:var(--glow)}
-.controls button.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 14px color-mix(in srgb,var(--accent) 50%,transparent)}
-.teamrow td{color:var(--glow)}
-.tabs button.active{color:var(--ink)}
 </style>
 </head>
 <body>
-<header><div class="brand"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button></div></header>
-<main><section class="view active" id="dash"><div class="nav"><button id="prev">‹</button><select id="day"></select><button id="next">›</button></div><div class="hero"><div id="heroDate"></div><div class="sub" id="heroSub"></div></div><div class="stats" id="stats"></div><div class="teams" id="teams"></div></section><section class="view" id="table"><div class="controls"><div id="teamButtons"></div><div class="search"><input id="search" placeholder="Cari nama…"></div></div><div class="scroll"><table><thead><tr id="headDates"></tr><tr id="headDays"></tr></thead><tbody id="body"></tbody></table></div><div class="empty" id="empty" hidden>Tidak ada nama yang cocok.</div></section></main><footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X libur</footer>
+<header><div class="brand"><img class="logo" id="logo" alt="" src="icons/logo.png" hidden onload="this.hidden=false;document.querySelector('.brand h1').classList.add('haslogo')" onerror="this.remove()"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button></div></header>
+<main><section class="view active" id="dash"><div class="nav"><button id="prev">‹</button><select id="day"></select><button id="next">›</button></div><div class="hero"><div class="eyebrow"><span class="seal">忍</span>Jadwal shift</div><div id="heroDate"></div><div class="sub" id="heroSub"></div></div><div class="stats" id="stats"></div><div class="teams" id="teams"></div></section><section class="view" id="table"><div class="controls"><div id="teamButtons"></div><div class="search"><input id="search" placeholder="Cari nama…"></div></div><div class="scroll"><table><thead><tr id="headDates"></tr><tr id="headDays"></tr></thead><tbody id="body"></tbody></table></div><div class="empty" id="empty" hidden>Tidak ada nama yang cocok.</div></section></main><footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X libur</footer>
 <script>
 const DATA={dates:[],days:[],teams:{}};const KEY='2PACX-1vTuv0DHS_mAjL1WVEmNtH1DouA6AZe5cmd9is5C9vlDuy2uNrv_0W9i87q8ra6u5xOx8RTbqZ6Rf_Oc';const CSV=`https://docs.google.com/spreadsheets/d/e/${KEY}/pub?output=csv`;const INFO={CF:['pagi','06:00–14:00'],CG:['pagi','07:00–15:00'],EF:['pagi','06:00–12:00'],EG:['pagi','07:00–13:00'],CK:['siang','11:00–19:00'],CL:['siang','12:00–20:00'],DN:['malam','14:30–22:30'],FP:['malam','16:30–22:30'],AL:['cuti','Cuti'],X:['off','Libur']};const LABEL={pagi:'Pagi',siang:'Siang',malam:'Malam',cuti:'Cuti',off:'Libur'};const ORDER=['pagi','siang','malam','cuti','off'];const FULL={SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat',SABTU:'Sabtu',MINGGU:'Minggu'};const DAYS=Object.keys(FULL);let index=0,active='ALL';
 function csv(text){let out=[],r=[],f='',q=false;for(let i=0;i<text.length;i++){let c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++}else if(c==='"')q=false;else f+=c}else if(c==='"')q=true;else if(c===','){r.push(f);f=''}else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;r.push(f);if(r.some(x=>x.trim()))out.push(r);r=[];f=''}else f+=c}if(f||r.length){r.push(f);out.push(r)}return out}
@@ -107,8 +100,8 @@ let deferredPrompt=null;const installBtn=document.getElementById('install');wind
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 window.addEventListener('online',sync);
 const themeBtn=document.getElementById('theme'),themeMeta=document.querySelector('meta[name=theme-color]'),darkMQ=matchMedia('(prefers-color-scheme:dark)');
-function applyTheme(){const t=document.documentElement.dataset.theme,dark=t?t==='dark':true;themeMeta.content=dark?'#120805':'#fff1e0';themeBtn.textContent=dark?'☀':'☾'}
+function applyTheme(){const t=document.documentElement.dataset.theme,dark=t?t==='dark':false;themeMeta.content=dark?'#12122a':'#f3e3c3';themeBtn.textContent=dark?'☀':'☾'}
 try{const s=localStorage.getItem('theme');if(s)document.documentElement.dataset.theme=s}catch(e){}
-themeBtn.onclick=()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':true,n=dark?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('theme',n)}catch(e){}applyTheme()};
+themeBtn.onclick=()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':false,n=dark?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('theme',n)}catch(e){}applyTheme()};
 applyTheme();
 </script></body></html>
