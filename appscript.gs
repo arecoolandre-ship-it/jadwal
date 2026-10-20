@@ -1,432 +1,197 @@
 /**
- * Google Apps Script - Kirim Jadwal ke WhatsApp via Fonnte
- * 
- * Cara setup:
- * 1. Buka Google Sheet jadwal
- * 2. Extensions > Apps Script
- * 3. Paste kode ini ke script editor
- * 4. Simpan project dengan nama "Jadwal WhatsApp Sender"
- * 5. Run fungsi main() pertama kali untuk authorize
- * 6. Setup trigger untuk auto-send (lihat bagian di bawah)
+ * Jadwal Fantastic 4 - kirim jadwal BESOK ke grup WhatsApp lewat Fonnte.
+ *
+ * SETUP (sekali saja):
+ * 1. Buka Google Sheet jadwal > Extensions > Apps Script, tempel kode ini.
+ * 2. Project Settings (ikon roda gigi) > Script Properties > Add script property:
+ *      FONNTE_TOKEN = token Fonnte kamu
+ *      WA_GROUP_ID  = ID grup, contoh 1203xxxxxxxxxxxx@g.us
+ *    Token JANGAN ditulis di kode ini, karena file ini ada di repo publik.
+ * 3. Jalankan pratinjau() untuk melihat isi pesan di Execution log (tidak mengirim).
+ * 4. Jalankan kirimJadwalBesok() sekali untuk memberi izin dan tes kirim.
+ * 5. Jalankan pasangTrigger() untuk mengirim otomatis tiap hari (atur JAM_KIRIM).
+ *    Hapus trigger lama di menu Triggers kalau sebelumnya sudah ada.
+ *
+ * Penulisan backup di sel jadwal: DN>FC, DN>RAMBI, DN>ES, DN>ODEN
+ * (shift DN, hari itu bertugas membackup tim tujuan).
  */
 
-// ========== KONFIGURASI ==========
-const CONFIG = {
-  FONNTE_TOKEN: '5AvJaqu9i22qiN9WbNYg',
-  WA_GROUP_ID: '120363420614252569@g.us',
-  FONNTE_API: 'https://api.fonnte.com/send',
-  SHEET_ID: SpreadsheetApp.getActiveSpreadsheet().getId(),
-  SHEET_NAME: 'Sheet1' // Sesuaikan dengan nama sheet Anda
+const SHEET_NAME = 'Sheet1';
+const TZ = 'Asia/Jakarta';
+const JAM_KIRIM = 20; // jam kirim jadwal besok (WIB)
+
+const SHIFT = {
+  CF: '06:00–14:00', CG: '07:00–15:00', EF: '06:00–12:00', EG: '07:00–13:00',
+  CK: '11:00–19:00', CL: '12:00–20:00', DN: '14:30–22:30', FP: '16:30–22:30'
 };
+const URUTAN = ['CF', 'EF', 'CG', 'EG', 'CK', 'CL', 'DN', 'FP'];
+const HARI = { SENIN: 'Senin', SELASA: 'Selasa', RABU: 'Rabu', KAMIS: 'Kamis', JUMAT: 'Jumat', SABTU: 'Sabtu', MINGGU: 'Minggu' };
+const BULAN = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
-// ========== FUNGSI UTAMA ==========
+// ========== BACA SHEET ==========
 
-/**
- * Fungsi untuk fetch data dari sheet dan kirim ke WhatsApp
- */
-function sendJadwalToWhatsApp() {
-  try {
-    Logger.log('🚀 Memulai proses pengiriman jadwal...');
-    
-    // Get data dari sheet
-    const jadwalData = parseJadwalFromSheet();
-    
-    if (!jadwalData.success) {
-      throw new Error(jadwalData.error);
-    }
-    
-    // Format pesan
-    const message = formatJadwalMessage(jadwalData.data);
-    Logger.log('📝 Pesan yang akan dikirim:\n' + message);
-    
-    // Kirim ke WhatsApp
-    const result = sendViaFonnte(message);
-    
-    if (result.success) {
-      Logger.log('✅ Jadwal berhasil dikirim!');
-      Logger.log('Message ID: ' + result.messageId);
-      
-      // Optional: Log ke sheet
-      logToSheet('SUCCESS', 'Jadwal sent', result.messageId);
-    } else {
-      throw new Error(result.error);
-    }
-    
-  } catch (error) {
-    Logger.log('❌ Error: ' + error.message);
-    logToSheet('ERROR', error.message, '');
-  }
-}
+function bacaSheet() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) throw new Error('Sheet "' + SHEET_NAME + '" tidak ditemukan');
+  const rows = sheet.getDataRange().getDisplayValues();
 
-/**
- * Parse data jadwal dari Google Sheet
- */
-function parseJadwalFromSheet() {
-  try {
-    const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
-    
-    if (data.length < 3) {
-      return {
-        success: false,
-        error: 'Sheet tidak memiliki data yang cukup'
-      };
-    }
-    
-    const parsed = {
-      dates: [],
-      days: [],
-      teams: {},
-      rawData: data
-    };
-    
-    // Parse header dan data
-    let teamCurrentIndex = -1;
-    let dateRowIndex = -1;
-    let dayRowIndex = -1;
-    
-    // Cari baris TANGGAL dan HARI
-    for (let i = 0; i < data.length; i++) {
-      const firstCell = String(data[i][0]).trim().toUpperCase();
-      
-      if (firstCell === 'TANGGAL') {
-        dateRowIndex = i;
-        parsed.dates = data[i].slice(1).filter(d => d !== '').map(d => String(d).trim());
-      }
-      
-      const daysInRow = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'MINGGU'];
-      if (daysInRow.some(day => data[i].includes(day))) {
-        dayRowIndex = i;
-        parsed.days = data[i].slice(1).filter(d => d !== '').map(d => String(d).trim());
-      }
-      
-      // Cari TIM
-      if (/^TIM\s/.test(firstCell)) {
-        const teamName = firstCell.replace(/^TIM\s*/i, '').trim();
-        parsed.teams[teamName] = {
-          rowIndex: i,
-          schedule: {}
-        };
-        teamCurrentIndex = teamName;
-      }
-    }
-    
-    if (dateRowIndex === -1 || dayRowIndex === -1 || Object.keys(parsed.teams).length === 0) {
-      return {
-        success: false,
-        error: 'Format sheet tidak valid. Pastikan ada baris TANGGAL dan HARI'
-      };
-    }
-    
-    // Parse schedule untuk setiap tim
-    Object.entries(parsed.teams).forEach(([teamName, teamData]) => {
-      const rowIndex = teamData.rowIndex;
-      const scheduleRow = data[rowIndex + 1] || []; // Baris setelah TIM header
-      
-      parsed.dates.forEach((date, idx) => {
-        if (!parsed.teams[teamName].schedule[date]) {
-          parsed.teams[teamName].schedule[date] = {};
-        }
-        
-        parsed.days.forEach((day, dayIdx) => {
-          parsed.teams[teamName].schedule[date][day] = scheduleRow[dayIdx + 1] || '-';
-        });
-      });
-    });
-    
-    Logger.log('✓ Data parsed: ' + Object.keys(parsed.teams).length + ' tim, ' + parsed.dates.length + ' tanggal');
-    
-    return {
-      success: true,
-      data: parsed
-    };
-    
-  } catch (error) {
-    return {
-      success: false,
-      error: 'Error parsing sheet: ' + error.message
-    };
-  }
-}
+  const teams = {};
+  let dates = null, days = null, team = null, tahap = '';
 
-/**
- * Format jadwal menjadi pesan WhatsApp
- */
-function formatJadwalMessage(jadwalData) {
-  const { dates, days, teams } = jadwalData;
-  
-  // Gunakan tanggal hari ini jika ada
-  const today = new Date();
-  let targetDate = null;
-  
-  const dateNum = String(today.getDate()).padStart(2, '0');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthStr = months[today.getMonth()];
-  
-  // Cari format tanggal yang match
-  targetDate = dates.find(d => d.includes(dateNum) && d.includes(monthStr)) || dates[0];
-  
-  let message = '*📅 JADWAL FANTASTIC 4*\n';
-  message += `*Tanggal: ${targetDate}*\n`;
-  message += '━━━━━━━━━━━━━━━━\n\n';
-  
-  // Format untuk setiap tim
-  Object.entries(teams).forEach(([teamName, teamData]) => {
-    const schedule = teamData.schedule || teamData;
-    
-    if (schedule[targetDate]) {
-      message += `*${teamName}*\n`;
-      
-      days.forEach((day) => {
-        const shift = schedule[targetDate][day] || '-';
-        const emojiDay = {
-          'SENIN': '🔵', 'SELASA': '🟡', 'RABU': '🟢',
-          'KAMIS': '🔴', 'JUMAT': '🟣', 'SABTU': '⚪', 'MINGGU': '⚫'
-        }[day] || '•';
-        
-        message += `${emojiDay} ${day}: ${shift}\n`;
-      });
-      message += '\n';
+  rows.forEach(raw => {
+    const a = raw.map(x => String(x || '').trim());
+    const isi = a.filter(Boolean);
+    if (!isi.length) return;
+    const first = a[0];
+
+    if (isi.length === 1 && /^TIM\s/i.test(first)) {
+      team = first.toUpperCase();
+      teams[team] = {};
+      tahap = 'tanggal';
+      return;
+    }
+    if (team && /^NAMA$/i.test(first)) {
+      if (tahap === 'tanggal') { if (!dates) dates = a.slice(1); tahap = 'hari'; }
+      else if (tahap === 'hari') { if (!days) days = a.slice(1); tahap = 'orang'; }
+      return;
+    }
+    if (team && tahap === 'orang' && first && !/^(KODE SHIFT|WAKTU)$/i.test(first)) {
+      teams[team][first] = a.slice(1);
     }
   });
-  
-  return message;
+
+  if (!dates || !Object.keys(teams).length) throw new Error('Format sheet tidak terbaca');
+  return { dates: dates, days: days || [], teams: teams };
 }
 
-/**
- * Kirim pesan via Fonnte API
- */
-function sendViaFonnte(message) {
-  try {
-    const payload = {
-      token: CONFIG.FONNTE_TOKEN,
-      to: CONFIG.WA_GROUP_ID,
-      message: message
-    };
-    
-    const options = {
-      method: 'post',
-      payload: payload,
-      muteHttpExceptions: true
-    };
-    
-    const response = UrlFetchApp.fetch(CONFIG.FONNTE_API, options);
-    const result = JSON.parse(response.getContentText());
-    
-    if (result.status === true) {
-      return {
-        success: true,
-        messageId: result.data?.id || 'unknown'
-      };
-    } else {
-      return {
-        success: false,
-        error: result.reason || 'Unknown error from Fonnte'
-      };
-    }
-    
-  } catch (error) {
-    return {
-      success: false,
-      error: 'Error: ' + error.message
-    };
+// "DN>FC" -> {kode:'DN', ke:'FC'}
+function urai(v) {
+  const s = String(v || '').trim().toUpperCase();
+  const m = s.match(/^([A-Z]+)\s*>\s*([A-Z][A-Z ]*?)\s*$/);
+  return m ? { kode: m[1], ke: m[2] } : { kode: s, ke: null };
+}
+
+// "ES" -> "TIM ES CREAM"
+function cariTim(teams, token) {
+  if (!token) return null;
+  const kata = token.split(/\s+/);
+  const nama = Object.keys(teams).filter(function (t) {
+    return t.replace(/^TIM\s+/i, '').split(/\s+/).some(function (w) { return kata.indexOf(w) >= 0; });
+  });
+  return nama.length ? nama[0] : null;
+}
+
+function pendek(t) { return t.replace(/^TIM\s+/i, ''); }
+
+function cariIndeksTanggal(dates, tanggal) {
+  const tgl = Number(Utilities.formatDate(tanggal, TZ, 'd'));
+  const bln = BULAN[Number(Utilities.formatDate(tanggal, TZ, 'M')) - 1];
+  for (let i = 0; i < dates.length; i++) {
+    const m = String(dates[i]).trim().toLowerCase().match(/^0?(\d{1,2})-([a-z]{3})/);
+    if (m && Number(m[1]) === tgl && m[2] === bln) return i;
   }
+  return -1;
 }
 
-// ========== LOGGING & HELPER ==========
+// ========== SUSUN PESAN ==========
 
-/**
- * Log ke sheet untuk tracking
- */
-function logToSheet(status, message, messageId) {
-  try {
-    const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName('Logs');
-    if (!sheet) return; // Skip jika sheet 'Logs' tidak ada
-    
-    sheet.appendRow([
-      new Date(),
-      status,
-      message,
-      messageId
-    ]);
-  } catch (e) {
-    // Ignore jika sheet tidak ada
-  }
-}
+function susunPesan(data, idx, judul) {
+  const teams = data.teams;
+  const hari = HARI[String(data.days[idx] || '').toUpperCase()] || '';
+  let pesan = '*' + judul + '*\n';
+  pesan += '*' + (hari ? hari + ', ' : '') + data.dates[idx] + '*\n';
+  pesan += '━━━━━━━━━━━━━━━━\n';
 
-/**
- * Fungsi test - Run ini untuk test tanpa trigger
- */
-function testSendJadwal() {
-  sendJadwalToWhatsApp();
-}
+  Object.keys(teams).forEach(function (t) {
+    const bertugas = [];
+    const libur = [], cuti = [];
 
-/**
- * Kirim jadwal dengan tanggal custom
- */
-function sendJadwalForDate(targetDate) {
-  try {
-    Logger.log('🚀 Mengirim jadwal untuk: ' + targetDate);
-    
-    const jadwalData = parseJadwalFromSheet();
-    if (!jadwalData.success) {
-      throw new Error(jadwalData.error);
-    }
-    
-    // Format dengan tanggal custom
-    let message = '*📅 JADWAL FANTASTIC 4*\n';
-    message += `*Tanggal: ${targetDate}*\n`;
-    message += '━━━━━━━━━━━━━━━━\n\n';
-    
-    const { days, teams } = jadwalData.data;
-    
-    Object.entries(teams).forEach(([teamName, teamData]) => {
-      const schedule = teamData.schedule || teamData;
-      
-      if (schedule[targetDate]) {
-        message += `*${teamName}*\n`;
-        
-        days.forEach((day) => {
-          const shift = schedule[targetDate][day] || '-';
-          const emojiDay = {
-            'SENIN': '🔵', 'SELASA': '🟡', 'RABU': '🟢',
-            'KAMIS': '🔴', 'JUMAT': '🟣', 'SABTU': '⚪', 'MINGGU': '⚫'
-          }[day] || '•';
-          
-          message += `${emojiDay} ${day}: ${shift}\n`;
-        });
-        message += '\n';
+    // orang tim ini
+    Object.keys(teams[t]).forEach(function (nama) {
+      const c = urai(teams[t][nama][idx]);
+      const tujuan = cariTim(teams, c.ke);
+      if (c.kode === 'X') libur.push(nama);
+      else if (c.kode === 'AL') cuti.push(nama);
+      else if (SHIFT[c.kode]) {
+        const catatan = tujuan && tujuan !== t ? ' → dipindah ke ' + pendek(tujuan) : '';
+        bertugas.push({ nama: nama, kode: c.kode, catatan: catatan });
       }
     });
-    
-    const result = sendViaFonnte(message);
-    
-    if (result.success) {
-      Logger.log('✅ Berhasil dikirim! Message ID: ' + result.messageId);
-    } else {
-      throw new Error(result.error);
-    }
-    
-  } catch (error) {
-    Logger.log('❌ Error: ' + error.message);
-  }
+
+    // backup dari tim lain yang masuk ke tim ini
+    Object.keys(teams).forEach(function (asal) {
+      if (asal === t) return;
+      Object.keys(teams[asal]).forEach(function (nama) {
+        const c = urai(teams[asal][nama][idx]);
+        if (SHIFT[c.kode] && cariTim(teams, c.ke) === t) {
+          bertugas.push({ nama: nama, kode: c.kode, catatan: ' (backup dari ' + pendek(asal) + ')' });
+        }
+      });
+    });
+
+    bertugas.sort(function (x, y) { return URUTAN.indexOf(x.kode) - URUTAN.indexOf(y.kode); });
+
+    pesan += '\n*' + t + '*\n';
+    if (!bertugas.length) pesan += '- tidak ada yang bertugas\n';
+    bertugas.forEach(function (b) {
+      pesan += '• ' + b.nama + ' — ' + b.kode + ' (' + SHIFT[b.kode] + ')' + b.catatan + '\n';
+    });
+    if (libur.length) pesan += '_Libur: ' + libur.join(', ') + '_\n';
+    if (cuti.length) pesan += '_Cuti: ' + cuti.join(', ') + '_\n';
+  });
+
+  return pesan;
 }
 
-// ========== SETUP TRIGGER ==========
-
-/**
- * CARA SETUP TRIGGER OTOMATIS:
- * 
- * 1. Di Apps Script editor, klik "⏰ Triggers" (kiri sidebar)
- * 2. Klik "+ Create new trigger"
- * 3. Pilih:
- *    - Function to execute: sendJadwalToWhatsApp
- *    - Which deployment should execute?: Head
- *    - Select event source: Time-driven
- *    - Select type of time based trigger: Day timer
- *    - Select time of day: 07:00 - 08:00 (untuk kirim pagi)
- * 4. Klik Create
- * 
- * Untuk reminder malam, buat trigger kedua dengan waktu 22:00
- * 
- * CATATAN:
- * - Apps Script akan berjalan di timezone Google Cloud (UTC)
- * - Sesuaikan waktu dengan timezone Anda
- * - Untuk WIB (UTC+7), setting "07:00" ≈ 14:00 WIB (tergantung DST)
- */
-
-/**
- * Fungsi untuk reminder malam (optional)
- * Setup trigger terpisah untuk fungsi ini
- */
-function sendReminderMalam() {
-  try {
-    Logger.log('🌙 Mengirim reminder malam...');
-    
-    const jadwalData = parseJadwalFromSheet();
-    if (!jadwalData.success) {
-      throw new Error(jadwalData.error);
-    }
-    
-    let message = '*🌙 REMINDER - CEK JADWAL ESOK HARI*\n';
-    message += '━━━━━━━━━━━━━━━━\n\n';
-    message += formatJadwalMessage(jadwalData.data);
-    
-    const result = sendViaFonnte(message);
-    
-    if (result.success) {
-      Logger.log('✅ Reminder terkirim!');
-      logToSheet('SUCCESS', 'Reminder sent', result.messageId);
-    } else {
-      throw new Error(result.error);
-    }
-    
-  } catch (error) {
-    Logger.log('❌ Error: ' + error.message);
-    logToSheet('ERROR', 'Reminder failed: ' + error.message, '');
-  }
+function pesanUntuk(tanggal, judul) {
+  const data = bacaSheet();
+  const idx = cariIndeksTanggal(data.dates, tanggal);
+  if (idx < 0) throw new Error('Tanggal ' + Utilities.formatDate(tanggal, TZ, 'd MMM yyyy') + ' belum ada di sheet');
+  return susunPesan(data, idx, judul);
 }
 
-// ========== DEPLOYMENT ==========
+function besok() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d;
+}
 
-/**
- * JIKA INGIN TRIGGER DARI LUAR (via REST API):
- * 
- * 1. Deploy sebagai API:
- *    - Klik Deploy > New deployment
- *    - Type: Web app
- *    - Execute as: [Your email]
- *    - Who has access: Anyone
- *    - Deploy
- * 
- * 2. Copy URL yang diberikan (misal: https://script.google.com/macros/d/xxxxx/userweb)
- * 
- * 3. Panggil dari aplikasi lain:
- *    curl -X POST https://script.google.com/macros/d/xxxxx/userweb
- * 
- * Atau dari Zapier, IFTTT, dll
- */
+// ========== KIRIM ==========
 
-/**
- * Fungsi untuk deployment as web app
- */
-function doPost(e) {
-  try {
-    const action = e.parameter.action || 'send';
-    const targetDate = e.parameter.date || null;
-    
-    let response = {};
-    
-    if (action === 'send') {
-      if (targetDate) {
-        sendJadwalForDate(targetDate);
-        response.message = 'Jadwal ' + targetDate + ' sent';
-      } else {
-        sendJadwalToWhatsApp();
-        response.message = 'Jadwal today sent';
-      }
-      response.status = 'success';
-    } else if (action === 'reminder') {
-      sendReminderMalam();
-      response.message = 'Reminder sent';
-      response.status = 'success';
-    } else if (action === 'test') {
-      const jadwalData = parseJadwalFromSheet();
-      response.status = jadwalData.success ? 'success' : 'error';
-      response.message = jadwalData.error || 'Data fetched successfully';
-      response.data = jadwalData.data;
-    } else {
-      response.status = 'error';
-      response.message = 'Unknown action';
-    }
-    
-    return ContentService.createTextOutput(JSON.stringify(response))
-      .setMimeType(ContentService.MimeType.JSON);
-    
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'error',
-      message: error.message
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
+function kirimWA(pesan) {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('FONNTE_TOKEN');
+  const grup = props.getProperty('WA_GROUP_ID');
+  if (!token || !grup) throw new Error('FONNTE_TOKEN / WA_GROUP_ID belum diisi di Script Properties');
+
+  const res = UrlFetchApp.fetch('https://api.fonnte.com/send', {
+    method: 'post',
+    headers: { Authorization: token },
+    payload: { target: grup, message: pesan },
+    muteHttpExceptions: true
+  });
+  const hasil = JSON.parse(res.getContentText());
+  if (hasil.status !== true) throw new Error('Fonnte: ' + (hasil.reason || res.getContentText()));
+  return hasil;
+}
+
+function kirimJadwalBesok() {
+  const pesan = pesanUntuk(besok(), '📅 JADWAL BESOK - FANTASTIC 4');
+  kirimWA(pesan);
+  Logger.log('Terkirim:\n' + pesan);
+}
+
+// ========== PRATINJAU & TRIGGER ==========
+
+function pratinjau() {
+  Logger.log(pesanUntuk(besok(), '📅 JADWAL BESOK - FANTASTIC 4'));
+}
+
+function pasangTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'kirimJadwalBesok') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('kirimJadwalBesok')
+    .timeBased().atHour(JAM_KIRIM).nearMinute(0).everyDays(1).inTimezone(TZ).create();
+  Logger.log('Trigger dipasang: tiap hari sekitar jam ' + JAM_KIRIM + ':00 WIB');
 }
