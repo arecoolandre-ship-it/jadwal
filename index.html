@@ -101,18 +101,26 @@ footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 .impmsg{margin-top:12px;font-weight:800}
 .impmsg.err{color:#e5484d}.impmsg.okk{color:var(--cuti)}
 .impbtns{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+.imph{font:400 22px/1 var(--d);margin:22px 0 4px;letter-spacing:.05em}
+.impdraf{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:3px solid var(--bd);border-radius:8px;padding:8px 10px;margin-top:8px;background:color-mix(in srgb,var(--aura) 14%,var(--panel))}
+.impdraf b{flex:1;min-width:150px}
+.impdraf .why{flex-basis:100%;font-size:13px;font-weight:700}
 </style>
 </head>
 <body>
 <header><div class="brand"><img class="logo" id="logo" alt="" src="icons/logo.png" hidden onload="this.hidden=false;document.querySelector('.brand h1').classList.add('haslogo')" onerror="this.remove()"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><button class="install" id="impBtn">Import Excel</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button></div></header>
 <main><section class="view active" id="dash"><div class="nav"><button id="prev">‹</button><select id="day"></select><button id="next">›</button></div><div class="hero"><div class="eyebrow"><span class="seal">龍</span>Jadwal shift</div><div id="heroDate"></div><div class="sub" id="heroSub"></div></div><div class="stats" id="stats"></div><div class="teams" id="teams"></div></section><section class="view" id="table"><div class="controls"><div id="teamButtons"></div><div class="search"><input id="search" placeholder="Cari nama…"></div></div><div class="scroll"><table><thead><tr id="headDates"></tr><tr id="headDays"></tr></thead><tbody id="body"></tbody></table></div><div class="empty" id="empty" hidden>Tidak ada nama yang cocok.</div></section></main><footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X libur · DN&gt;FC = shift DN, hari itu backup di FC · CF#FIREDRILL = shift CF, hari itu ada kegiatan Fire Drill</footer>
 <div id="impWrap" role="dialog" aria-modal="true" aria-labelledby="impTitle"><div id="impBox"><h2 id="impTitle">Import jadwal dari Excel</h2>
-<label for="impFile">1. Pilih file Excel (.xlsx)</label><input type="file" id="impFile" accept=".xlsx,.xls">
+<label for="impPin">PIN</label><input type="password" id="impPin" autocomplete="off">
+<label for="impFile">Pilih file Excel (.xlsx) untuk dijadikan draf</label><input type="file" id="impFile" accept=".xlsx,.xls">
 <div id="impPrev" hidden><div id="impSummary" class="sub" style="margin-top:12px"></div>
-<label>2. Cocokkan tim di Excel dengan tim di spreadsheet</label><div class="impmap" id="impMap"></div><ul class="impwarn" id="impWarn"></ul>
-<label for="impPin">3. PIN</label><input type="password" id="impPin" autocomplete="off"></div>
+<label>Cocokkan tim di Excel dengan tim di spreadsheet</label><div class="impmap" id="impMap"></div><ul class="impwarn" id="impWarn"></ul></div>
 <div class="impmsg" id="impMsg"></div>
-<div class="impbtns"><button class="install" id="impCancel">Tutup</button><button class="install" id="impGo" disabled>Simpan ke spreadsheet</button></div></div></div>
+<div class="impbtns"><button class="install" id="impGo" disabled>Simpan sebagai draf</button></div>
+<h3 class="imph">Draf tersimpan</h3>
+<div class="sub">Periode berjalan (Sheet1) tidak berubah sampai kamu menekan Aktifkan.</div>
+<div id="impDrafs"></div><div class="impmsg" id="impMsg2"></div>
+<div class="impbtns"><button class="install" id="impRefresh" disabled>Lihat draf</button><button class="install" id="impCancel">Tutup</button></div></div></div>
 <script>
 const DATA={dates:[],days:[],teams:{}};const KEY='2PACX-1vTuv0DHS_mAjL1WVEmNtH1DouA6AZe5cmd9is5C9vlDuy2uNrv_0W9i87q8ra6u5xOx8RTbqZ6Rf_Oc';const CSV=`https://docs.google.com/spreadsheets/d/e/${KEY}/pub?output=csv`;const INFO={CF:['pagi','06:00–14:00'],CG:['pagi','07:00–15:00'],EF:['pagi','06:00–12:00'],EG:['pagi','07:00–13:00'],CK:['siang','11:00–19:00'],CL:['siang','12:00–20:00'],DN:['malam','14:30–22:30'],FP:['malam','16:30–22:30'],AL:['cuti','Cuti'],X:['off','Libur']};const LABEL={pagi:'Pagi',siang:'Siang',malam:'Malam',cuti:'Cuti',off:'Libur'};const ORDER=['pagi','siang','malam','cuti','off'];const FULL={SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat',SABTU:'Sabtu',MINGGU:'Minggu'};const DAYS=Object.keys(FULL);let index=0,active='ALL';
 function csv(text){let out=[],r=[],f='',q=false;for(let i=0;i<text.length;i++){let c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++}else if(c==='"')q=false;else f+=c}else if(c==='"')q=true;else if(c===','){r.push(f);f=''}else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;r.push(f);if(r.some(x=>x.trim()))out.push(r);r=[];f=''}else f+=c}if(f||r.length){r.push(f);out.push(r)}return out}
@@ -171,17 +179,38 @@ el('impWarn').innerHTML=warn.slice(0,20).map(w=>'<li>'+esc(w)+'</li>').join('')+
 el('impPrev').hidden=false;impMsg(warn.length?'Periksa peringatan di atas. Data tetap bisa disimpan.':'');
 document.querySelectorAll('#impMap select').forEach(s=>s.onchange=impCheck);impCheck()}
 function impCheck(){const v=[...document.querySelectorAll('#impMap select')].map(s=>s.value);el('impGo').disabled=!imp||imp.bad||!el('impPin').value||v.some(x=>!x)||new Set(v).size!==v.length}
-async function impSend(){if(!IMPORT_URL)return impMsg('URL Apps Script belum diisi di index.html (IMPORT_URL).','err');
-const sel=[...document.querySelectorAll('#impMap select')];const body={pin:el('impPin').value,dates:imp.dates,days:imp.days,teams:imp.blocks.map((b,i)=>({name:sel[i].value,people:b.people}))};
+async function impPost(body){const r=await fetch(IMPORT_URL,{method:'POST',body:JSON.stringify(body)});return r.json()}
+function impNeed(m){if(!IMPORT_URL){m('URL Apps Script belum diisi di index.html (IMPORT_URL).','err');return false}if(!el('impPin').value){m('Isi PIN dulu.','err');return false}return true}
+function impMsg2(t,cls){const m=el('impMsg2');m.textContent=t||'';m.className='impmsg'+(cls?' '+cls:'')}
+async function impSend(){if(!impNeed(impMsg))return;
+const sel=[...document.querySelectorAll('#impMap select')];const body={action:'simpan',pin:el('impPin').value,dates:imp.dates,days:imp.days,teams:imp.blocks.map((b,i)=>({name:sel[i].value,people:b.people}))};
 el('impGo').disabled=true;impMsg('Menyimpan…');
-try{const r=await fetch(IMPORT_URL,{method:'POST',body:JSON.stringify(body)});const j=await r.json();
+try{const j=await impPost(body);
 if(!j.ok){impMsg(j.msg||'Gagal menyimpan.','err');return impCheck()}
 const m={};imp.blocks.forEach((b,i)=>{if(b.title)m[b.title]=sel[i].value});try{localStorage.setItem('impMap',JSON.stringify(m))}catch(e){}
-impMsg(j.msg+' Webapp bisa butuh beberapa menit untuk menampilkan data baru.','okk');setTimeout(sync,4000)}
+impMsg(j.msg,'okk');imp=null;el('impFile').value='';el('impPrev').hidden=true;impList()}
 catch(e){impMsg('Gagal terhubung: '+e.message,'err');impCheck()}}
-el('impBtn').onclick=()=>{imp=null;el('impFile').value='';el('impPin').value='';el('impPrev').hidden=true;impMsg('');el('impGo').disabled=true;el('impWrap').classList.add('open')};
+async function impList(){if(!impNeed(impMsg2))return;el('impRefresh').disabled=true;impMsg2('Memuat daftar draf…');
+try{const j=await impPost({action:'daftar',pin:el('impPin').value});
+if(!j.ok){impMsg2(j.msg||'Gagal memuat.','err');return}
+impAktif=j.aktif;const box=el('impDrafs');
+box.innerHTML=j.drafs.length?j.drafs.map(d=>'<div class="impdraf" data-n="'+esc(d.nama)+'"><b>'+esc(d.awal)+' s.d. '+esc(d.akhir)+'</b><span class="sub">'+d.orang+' orang</span>'+(d.terbaca?'<button class="install" data-act="ask">Aktifkan</button>':'<span class="sub">tidak terbaca</span>')+'</div>').join(''):'<div class="sub" style="margin-top:8px">Belum ada draf.</div>';
+impMsg2(j.aktif?'Periode berjalan: '+j.aktif.awal+' s.d. '+j.aktif.akhir+' ('+j.aktif.orang+' orang).':'Sheet1 kosong atau tidak terbaca.')}
+catch(e){impMsg2('Gagal terhubung: '+e.message,'err')}finally{impCheckPin()}}
+let impAktif=null;
+function impCheckPin(){el('impRefresh').disabled=!el('impPin').value}
+el('impDrafs').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const row=b.closest('.impdraf'),nama=row.dataset.n;
+if(b.dataset.act==='ask'){const old=impAktif?'Periode berjalan ('+impAktif.awal+' s.d. '+impAktif.akhir+') akan diarsipkan dan diganti draf ini.':'Draf ini akan jadi isi Sheet1.';
+row.insertAdjacentHTML('beforeend','<div class="why">'+esc(old)+' Webapp dan notifikasi WhatsApp langsung memakai jadwal baru.</div>');b.outerHTML='<button class="install" data-act="go">Ya, aktifkan</button><button class="install" data-act="no">Batal</button>';return}
+if(b.dataset.act==='no')return impList();
+if(b.dataset.act==='go'){row.querySelectorAll('button').forEach(x=>x.disabled=true);impMsg2('Mengaktifkan…');
+try{const j=await impPost({action:'aktifkan',pin:el('impPin').value,nama});
+if(!j.ok){impMsg2(j.msg||'Gagal mengaktifkan.','err');return impList().then(()=>impMsg2(j.msg||'Gagal mengaktifkan.','err'))}
+await impList();impMsg2(j.msg+' Webapp bisa butuh beberapa menit untuk menampilkan data baru.','okk');setTimeout(sync,4000)}
+catch(err){impMsg2('Gagal terhubung: '+err.message,'err')}}};
+el('impBtn').onclick=()=>{imp=null;el('impFile').value='';el('impPin').value='';el('impPrev').hidden=true;impMsg('');impMsg2('');el('impDrafs').innerHTML='';el('impGo').disabled=true;impCheckPin();el('impWrap').classList.add('open')};
 el('impCancel').onclick=()=>el('impWrap').classList.remove('open');
-el('impPin').oninput=impCheck;el('impGo').onclick=impSend;
+el('impPin').oninput=()=>{impCheck();impCheckPin()};el('impGo').onclick=impSend;el('impRefresh').onclick=impList;
 el('impFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(typeof XLSX==='undefined')return impMsg('Pembaca Excel belum termuat. Cek koneksi internet lalu coba lagi.','err');
 try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];impPreview(parseExcel(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''})))}catch(err){impMsg('File tidak bisa dibaca: '+err.message,'err')}};
 </script></body></html>
