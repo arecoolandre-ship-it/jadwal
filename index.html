@@ -158,7 +158,7 @@ try{const s=localStorage.getItem('theme');if(s)document.documentElement.dataset.
 themeBtn.onclick=()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':false,n=dark?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('theme',n)}catch(e){}applyTheme()};
 applyTheme();
 /* ===== IMPORT EXCEL ===== */
-const IMPORT_URL=''; // isi dengan URL Web App Apps Script (berakhiran /exec)
+const IMPORT_URL='https://script.google.com/macros/s/AKfycbyk-_TkFikun9lDjvqs8dZb5axu2zoGLd1TwWNvovgX-gORgTMJaoF2Yb6tgNlh0D6h/exec'; // isi dengan URL Web App Apps Script (berakhiran /exec)
 const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 let imp=null;
 const el=id=>document.getElementById(id);
