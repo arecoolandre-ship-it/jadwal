@@ -112,7 +112,7 @@ footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
-<header><div class="brand"><img class="logo" id="logo" alt="" src="icons/logo.png" hidden onload="this.hidden=false;document.querySelector('.brand h1').classList.add('haslogo')" onerror="this.remove()"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><button class="install" id="impBtn">Import Excel</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button><button id="reqTab">Request</button></div></header>
+<header><div class="brand"><img class="logo" id="logo" alt="" src="icons/logo.png" hidden onload="this.hidden=false;document.querySelector('.brand h1').classList.add('haslogo')" onerror="this.remove()"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><button class="install" id="impBtn">Import Excel</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button><button id="reqTab" hidden>Request</button></div></header>
 <main><section class="view active" id="dash"><div class="nav"><button id="prev">‹</button><select id="day"></select><button id="next">›</button></div><div class="hero"><div class="eyebrow"><span class="seal">龍</span>Jadwal shift</div><div id="heroDate"></div><div class="sub" id="heroSub"></div></div><div class="stats" id="stats"></div><div class="teams" id="teams"></div></section><section class="view" id="table"><div class="controls"><div id="teamButtons"></div><div class="search"><input id="search" placeholder="Cari nama…"></div></div><div class="scroll"><table><thead><tr id="headDates"></tr><tr id="headDays"></tr></thead><tbody id="body"></tbody></table></div><div class="empty" id="empty" hidden>Tidak ada nama yang cocok.</div></section><section class="view" id="reqView"><div class="team"><h3>Request jadwal</h3><div class="sub" id="rqInfo">Memuat…</div>
 <div class="rqform"><label>Nama<select id="rqNama"><option value="">Pilih nama…</option></select></label><label>Jenis<select id="rqJenis"><option value="OFF">Off (libur) → X</option><option value="CUTI">Cuti → AL</option><option value="CF">CF · 06:00–14:00</option><option value="CG">CG · 07:00–15:00</option><option value="EF">EF · 06:00–12:00</option><option value="EG">EG · 07:00–13:00</option><option value="CK">CK · 11:00–19:00</option><option value="CL">CL · 12:00–20:00</option></select></label><label>Dari tanggal<input type="date" id="rqDari"></label><label>Sampai tanggal<input type="date" id="rqSampai"></label></div>
 <button class="install" id="rqKirim">Kirim request</button><div class="impmsg" id="rqMsg"></div></div>
@@ -127,6 +127,12 @@ footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 <h3 class="imph">Draf tersimpan</h3>
 <div class="sub">Periode berjalan (Sheet1) tidak berubah sampai kamu menekan Aktifkan.</div>
 <div id="impDrafs"></div><div class="impmsg" id="impMsg2"></div>
+<h3 class="imph">Jadwal request staff</h3>
+<div class="sub" id="rqWin">Memuat status…</div>
+<div class="rqform"><label>Dibuka mulai<input type="date" id="rqBuka"></label><label>Ditutup setelah<input type="date" id="rqTutup"></label></div>
+<div class="impbtns"><button class="install" id="rqCloseNow">Tutup sekarang</button><button class="install" id="rqSave">Simpan jadwal</button></div>
+<div class="impbtns"><button class="install" id="rqAdminTab">Lihat daftar request (admin)</button></div>
+<div class="impmsg" id="impMsg3"></div>
 <div class="impbtns"><button class="install" id="impRefresh" disabled>Lihat draf</button><button class="install" id="impCancel">Tutup</button></div></div></div>
 <script>
 const DATA={dates:[],days:[],teams:{}};const KEY='2PACX-1vTuv0DHS_mAjL1WVEmNtH1DouA6AZe5cmd9is5C9vlDuy2uNrv_0W9i87q8ra6u5xOx8RTbqZ6Rf_Oc';const CSV=`https://docs.google.com/spreadsheets/d/e/${KEY}/pub?output=csv`;const INFO={CF:['pagi','06:00–14:00'],CG:['pagi','07:00–15:00'],EF:['pagi','06:00–12:00'],EG:['pagi','07:00–13:00'],CK:['siang','11:00–19:00'],CL:['siang','12:00–20:00'],DN:['malam','14:30–22:30'],FP:['malam','16:30–22:30'],AL:['cuti','Cuti'],X:['off','Libur']};const LABEL={pagi:'Pagi',siang:'Siang',malam:'Malam',cuti:'Cuti',off:'Libur'};const ORDER=['pagi','siang','malam','cuti','off'];const FULL={SENIN:'Senin',SELASA:'Selasa',RABU:'Rabu',KAMIS:'Kamis',JUMAT:'Jumat',SABTU:'Sabtu',MINGGU:'Minggu'};const DAYS=Object.keys(FULL);let index=0,active='ALL';
@@ -207,7 +213,7 @@ catch(e){impMsg2('Gagal terhubung: '+e.message,'err')}finally{impCheckPin()}}
 let impAktif=null;
 function impCheckPin(){el('impRefresh').disabled=!el('impPin').value}
 el('impDrafs').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const row=b.closest('.impdraf'),nama=row.dataset.n;
-if(b.dataset.act==='ask'){const old=impAktif?'Periode berjalan ('+impAktif.awal+' s.d. '+impAktif.akhir+') akan diarsipkan dan diganti draf ini.':'Draf ini akan jadi isi Sheet1.';
+if(b.dataset.act==='ask'){if(!el('impPin').value){impMsg2('Isi PIN di atas dulu untuk mengaktifkan draf.','err');el('impPin').focus();return}const old=impAktif?'Periode berjalan ('+impAktif.awal+' s.d. '+impAktif.akhir+') akan diarsipkan dan diganti draf ini.':'Draf ini akan jadi isi Sheet1.';
 row.insertAdjacentHTML('beforeend','<div class="why">'+esc(old)+' Webapp dan notifikasi WhatsApp langsung memakai jadwal baru.</div>');b.outerHTML='<button class="install" data-act="go">Ya, aktifkan</button><button class="install" data-act="no">Batal</button>';return}
 if(b.dataset.act==='no')return impList();
 if(b.dataset.act==='go'){row.querySelectorAll('button').forEach(x=>x.disabled=true);impMsg2('Mengaktifkan…');
@@ -215,7 +221,7 @@ try{const j=await impPost({action:'aktifkan',pin:el('impPin').value,nama});
 if(!j.ok){impMsg2(j.msg||'Gagal mengaktifkan.','err');return impList().then(()=>impMsg2(j.msg||'Gagal mengaktifkan.','err'))}
 await impList();impMsg2(j.msg+' Webapp bisa butuh beberapa menit untuk menampilkan data baru.','okk');setTimeout(sync,4000)}
 catch(err){impMsg2('Gagal terhubung: '+err.message,'err')}}};
-el('impBtn').onclick=()=>{imp=null;el('impFile').value='';el('impPin').value='';el('impPrev').hidden=true;impMsg('');impMsg2('');el('impDrafs').innerHTML='';el('impGo').disabled=true;impCheckPin();el('impWrap').classList.add('open')};
+el('impBtn').onclick=()=>{imp=null;el('impFile').value='';el('impPin').value='';el('impPrev').hidden=true;impMsg('');impMsg2('');el('impDrafs').innerHTML='';el('impGo').disabled=true;impCheckPin();el('impWrap').classList.add('open');rqStatus()};
 el('impCancel').onclick=()=>el('impWrap').classList.remove('open');
 el('impPin').oninput=()=>{impCheck();impCheckPin()};el('impGo').onclick=impSend;el('impRefresh').onclick=impList;
 el('impFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(typeof XLSX==='undefined')return impMsg('Pembaca Excel belum termuat. Cek koneksi internet lalu coba lagi.','err');
@@ -228,19 +234,38 @@ function rqMsg(t,cls){const m=el('rqMsg');m.textContent=t||'';m.className='impms
 function rqCls(j){return j==='CUTI'?'cuti':j==='OFF'?'off':(INFO[j]?INFO[j][0]:'')}
 function rqLbl(j){return j==='CUTI'?'Cuti':j==='OFF'?'Off':j}
 function rqNames(){const sel=el('rqNama');if(sel.options.length>1||!ok())return;const n=[];Object.values(DATA.teams).forEach(p=>Object.keys(p).forEach(x=>n.push(x)));n.sort((a,b)=>a.localeCompare(b));sel.innerHTML='<option value="">Pilih nama…</option>'+n.map(x=>'<option>'+esc(x)+'</option>').join('')}
+let rqOpen=false,rqAdminPin='';
+function rqShowTab(){el('reqTab').hidden=!(rqOpen||rqAdminPin)}
+function impMsg3(t,cls){const m=el('impMsg3');m.textContent=t||'';m.className='impmsg'+(cls?' '+cls:'')}
+function rqWinText(j){return j.dari&&j.sampai?(j.buka?'Request DIBUKA untuk staff: ':'Request ditutup. Jadwal tersimpan: ')+tglId(j.dari)+' – '+tglId(j.sampai)+'.':'Request ditutup. Belum ada jadwal buka.'}
+async function rqStatus(){if(!IMPORT_URL)return;
+try{const j=await impPost({action:'statusRequest'});if(!j.ok)return;rqOpen=!!j.buka;rqShowTab();
+el('rqWin').textContent=rqWinText(j);el('rqBuka').value=j.dari||'';el('rqTutup').value=j.sampai||'';
+if(!rqOpen&&!rqAdminPin&&el('reqView').classList.contains('active'))showTab('dashTab')}catch(e){}}
 async function rqLoad(){rqNames();
 if(!IMPORT_URL){el('rqInfo').textContent='Fitur request belum aktif: IMPORT_URL belum diisi.';el('rqList').innerHTML='';el('rqKirim').disabled=true;return}
-try{const j=await impPost({action:'daftarRequest'});if(!j.ok)throw Error(j.msg||'gagal');
-el('rqInfo').textContent='Request untuk periode '+tglId(j.siklus.awal)+' – '+tglId(j.siklus.akhir)+'. Off jadi X, Cuti jadi AL, atau kode shift yang kamu pilih, langsung masuk draf jadwal.';
-['rqDari','rqSampai'].forEach(i=>{el(i).min=j.siklus.awal;el(i).max=j.siklus.akhir});el('rqKirim').disabled=false;
+try{const j=await impPost({action:'daftarRequest',pin:rqAdminPin});if(!j.ok)throw Error(j.msg||'gagal');
+rqOpen=!!j.buka;rqShowTab();
+if(!j.buka&&!rqAdminPin){showTab('dashTab');return}
+el('rqInfo').textContent=j.buka?'Request untuk periode '+tglId(j.siklus.awal)+' – '+tglId(j.siklus.akhir)+', dibuka sampai '+tglId(j.sampai)+'. Off jadi X, Cuti jadi AL, atau kode shift yang kamu pilih, langsung masuk draf jadwal.':'MODE ADMIN: request sedang ditutup, staff tidak melihat tab ini. Form dikunci.';
+['rqDari','rqSampai'].forEach(i=>{el(i).min=j.siklus.awal;el(i).max=j.siklus.akhir});el('rqKirim').disabled=!j.buka;
 el('rqList').innerHTML=j.list.length?j.list.map(r=>'<div class="rqrow"><b>'+esc(r.nama)+'</b><span class="badge '+rqCls(r.jenis)+'">'+rqLbl(r.jenis)+'</span><span>'+(r.dari===r.sampai?tglId(r.dari):tglId(r.dari)+' – '+tglId(r.sampai))+'</span><span class="sub">'+esc(r.status)+'</span><button class="install" data-no="'+r.no+'">Batalkan</button></div>').join(''):'<div class="sub">Belum ada request untuk periode ini.</div>'}
 catch(e){el('rqInfo').textContent='Gagal memuat request: '+e.message}}
 el('rqDari').onchange=()=>{const d=el('rqDari').value,s2=el('rqSampai');if(d&&(!s2.value||s2.value<d))s2.value=d};
 el('rqKirim').onclick=async()=>{const nama=el('rqNama').value,dari=el('rqDari').value,sampai=el('rqSampai').value;
 if(!nama)return rqMsg('Pilih nama dulu.','err');if(!dari||!sampai)return rqMsg('Isi tanggal mulai dan selesai.','err');
 el('rqKirim').disabled=true;rqMsg('Mengirim…');
-try{const j=await impPost({action:'request',nama,jenis:el('rqJenis').value,dari,sampai});rqMsg(j.msg,j.ok?'okk':'err');if(j.ok){el('rqDari').value='';el('rqSampai').value='';rqLoad()}}
+try{const j=await impPost({action:'request',nama,jenis:el('rqJenis').value,dari,sampai});rqMsg(j.msg,j.ok?'okk':'err');if(j.ok){el('rqDari').value='';el('rqSampai').value='';rqLoad()}else if(/ditutup/.test(j.msg||''))rqStatus()}
 catch(e){rqMsg('Gagal terhubung: '+e.message,'err')}finally{el('rqKirim').disabled=false}};
 el('rqList').onclick=async e=>{const b=e.target.closest('button[data-no]');if(!b)return;const pin=prompt('PIN admin untuk membatalkan request ini:');if(!pin)return;
 b.disabled=true;try{const j=await impPost({action:'batalRequest',pin,no:+b.dataset.no});rqMsg(j.msg,j.ok?'okk':'err');rqLoad()}catch(err){rqMsg('Gagal terhubung: '+err.message,'err');b.disabled=false}};
+
+async function rqSetWindow(dari,sampai){if(!impNeed(impMsg3))return;
+try{const j=await impPost({action:'aturRequest',pin:el('impPin').value,dari,sampai});impMsg3(j.msg,j.ok?'okk':'err');if(j.ok){rqStatus()}}catch(e){impMsg3('Gagal terhubung: '+e.message,'err')}}
+el('rqSave').onclick=()=>{const d=el('rqBuka').value,t=el('rqTutup').value;if(!d||!t)return impMsg3('Isi tanggal mulai dan tanggal tutup.','err');rqSetWindow(d,t)};
+el('rqCloseNow').onclick=()=>{el('rqBuka').value='';el('rqTutup').value='';rqSetWindow('','')};
+el('rqAdminTab').onclick=async()=>{if(!impNeed(impMsg3))return;
+try{const j=await impPost({action:'daftarRequest',pin:el('impPin').value});if(!j.admin)return impMsg3('PIN salah.','err');
+rqAdminPin=el('impPin').value;rqShowTab();el('impWrap').classList.remove('open');showTab('reqTab')}catch(e){impMsg3('Gagal terhubung: '+e.message,'err')}};
+rqStatus();
 </script></body></html>
