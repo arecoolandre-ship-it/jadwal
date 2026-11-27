@@ -125,15 +125,17 @@ footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 .ppmt .tim{font-size:11px;font-weight:600;color:var(--sub)}
 .ppmt td.tot,.ppmt th{font-size:12px}
 .ppmnote{margin-top:14px;font-weight:600}
+.rqform.lock{opacity:.45;filter:grayscale(1)}.rqform.lock *{cursor:not-allowed}#reqLock{font-size:15px;margin:0 0 12px}
 </style>
 </head>
 <body>
-<header><div class="brand"><img class="logo" id="logo" alt="" src="icons/logo.png" hidden onload="this.hidden=false;document.querySelector('.brand h1').classList.add('haslogo')" onerror="this.remove()"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><button class="install" id="impBtn">Import Excel</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button><button id="ppmTab">Hari Masuk PPM</button><button id="reqTab" hidden>Request</button></div></header>
+<header><div class="brand"><img class="logo" id="logo" alt="" src="icons/logo.png" hidden onload="this.hidden=false;document.querySelector('.brand h1').classList.add('haslogo')" onerror="this.remove()"><h1>Jadwal Fantastic 4</h1><button class="icon" id="theme" aria-label="Ganti tema">☾</button><button class="install" id="install" hidden>Pasang aplikasi</button><button class="install" id="impBtn">Import Excel</button><span class="range" id="range">Memuat data…</span></div><div class="sync" id="sync"><span class="dot"></span><span id="syncText">Menyambungkan ke spreadsheet…</span></div><div class="tabs"><button class="active" id="dashTab">Dasbor Harian</button><button id="tableTab">Tabel Bulanan</button><button id="ppmTab">Hari Masuk PPM</button><button id="reqTab">Request</button></div></header>
 <main><section class="view active" id="dash"><div class="nav"><button id="prev">‹</button><select id="day"></select><button id="next">›</button></div><div class="hero"><div class="eyebrow"><span class="seal">龍</span>Jadwal shift</div><div id="heroDate"></div><div class="sub" id="heroSub"></div></div><div class="stats" id="stats"></div><div class="teams" id="teams"></div></section><section class="view" id="table"><div class="controls"><div id="teamButtons"></div><div class="search"><input id="search" placeholder="Cari nama…"></div></div><div class="scroll"><table><thead><tr id="headDates"></tr><tr id="headDays"></tr></thead><tbody id="body"></tbody></table></div><div class="empty" id="empty" hidden>Tidak ada nama yang cocok.</div></section><section class="view" id="ppmView"><div class="nav"><button id="ppmPrev" aria-label="Bulan sebelumnya">‹</button><div class="ppmtitle" id="ppmTitle">…</div><button id="ppmNext" aria-label="Bulan berikutnya">›</button></div>
 <div id="ppmAlert"></div><div id="ppmBody"><div class="sub">Memuat…</div></div>
 <div class="sub ppmnote" id="ppmNote">Batas masuk staff PPM: 15 hari per bulan kalender (1–akhir bulan). Dihitung dari kode CF, CG, EF, EG, CK, CL, DN, FP. X (libur) dan AL (cuti) tidak dihitung. Tanggal 1–20 dibaca dari jadwal yang berjalan, tanggal 21 ke atas dari draf periode berikutnya (kotak bergaris putus). Hari yang belum ada jadwalnya dihitung "belum dijadwal".</div>
 <div class="controls" style="margin-top:12px"><button id="ppmTulis">Perbarui tab Rekap di spreadsheet (PIN)</button></div><div class="impmsg" id="ppmMsg"></div></section>
 <section class="view" id="reqView"><div class="team"><h3>Request jadwal</h3><div class="sub" id="rqInfo">Memuat…</div>
+<div class="impmsg err" id="reqLock" hidden></div>
 <div class="rqform"><label>Nama<select id="rqNama"><option value="">Pilih nama…</option></select></label><label>Jenis<select id="rqJenis"><option value="OFF">Off (libur) → X</option><option value="CUTI">Cuti → AL</option><option value="CF">CF · 06:00–14:00</option><option value="CG">CG · 07:00–15:00</option><option value="EF">EF · 06:00–12:00</option><option value="EG">EG · 07:00–13:00</option><option value="CK">CK · 11:00–19:00</option><option value="CL">CL · 12:00–20:00</option></select></label><label>Dari tanggal<input type="date" id="rqDari"></label><label>Sampai tanggal<input type="date" id="rqSampai"></label></div>
 <button class="install" id="rqKirim">Kirim request</button><div class="impmsg" id="rqMsg"></div></div>
 <div class="team" style="margin-top:18px"><h3>Request masuk</h3><div id="rqList"><div class="sub">Memuat…</div></div></div></section></main><footer>Kode shift — CF 06:00–14:00 · CG 07:00–15:00 · EF 06:00–12:00 · EG 07:00–13:00 · CK 11:00–19:00 · CL 12:00–20:00 · DN 14:30–22:30 · FP 16:30–22:30 · AL cuti · X libur · DN&gt;FC = shift DN, hari itu backup di FC · CF#FIREDRILL = shift CF, hari itu ada kegiatan Fire Drill</footer>
@@ -148,9 +150,10 @@ footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 <div class="sub">Periode berjalan (Sheet1) tidak berubah sampai kamu menekan Aktifkan.</div>
 <div id="impDrafs"></div><div class="impmsg" id="impMsg2"></div>
 <h3 class="imph">Jadwal request staff</h3>
+<div class="sub">Isi PIN di atas, pilih tanggal dibuka dan ditutup, lalu klik "Aktifkan request". Tab Request selalu terlihat, tapi form terkunci sampai tanggal buka tiba dan setelah tanggal tutup lewat.</div>
 <div class="sub" id="rqWin">Memuat status…</div>
 <div class="rqform"><label>Dibuka mulai<input type="date" id="rqBuka"></label><label>Ditutup setelah<input type="date" id="rqTutup"></label></div>
-<div class="impbtns"><button class="install" id="rqCloseNow">Tutup sekarang</button><button class="install" id="rqSave">Simpan jadwal</button></div>
+<div class="impbtns"><button class="install" id="rqCloseNow">Tutup sekarang</button><button class="install" id="rqSave">Aktifkan request</button></div>
 <div class="impbtns"><button class="install" id="rqAdminTab">Lihat daftar request (admin)</button></div>
 <div class="impmsg" id="impMsg3"></div>
 <div class="impbtns"><button class="install" id="impRefresh" disabled>Lihat draf</button><button class="install" id="impCancel">Tutup</button></div></div></div>
@@ -254,22 +257,24 @@ function rqMsg(t,cls){const m=el('rqMsg');m.textContent=t||'';m.className='impms
 function rqCls(j){return j==='CUTI'?'cuti':j==='OFF'?'off':(INFO[j]?INFO[j][0]:'')}
 function rqLbl(j){return j==='CUTI'?'Cuti':j==='OFF'?'Off':j}
 function rqNames(){const sel=el('rqNama');if(sel.options.length>1||!ok())return;const n=[];Object.values(DATA.teams).forEach(p=>Object.keys(p).forEach(x=>n.push(x)));n.sort((a,b)=>a.localeCompare(b));sel.innerHTML='<option value="">Pilih nama…</option>'+n.map(x=>'<option>'+esc(x)+'</option>').join('')}
-let rqOpen=false,rqAdminPin='';
-function rqShowTab(){el('reqTab').hidden=!(rqOpen||rqAdminPin)}
+let rqOpen=false,rqAdminPin='';function hariIsoJkt(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Jakarta'})}
+function rqShowTab(){}
 function impMsg3(t,cls){const m=el('impMsg3');m.textContent=t||'';m.className='impmsg'+(cls?' '+cls:'')}
 function rqWinText(j){return j.dari&&j.sampai?(j.buka?'Request DIBUKA untuk staff: ':'Request ditutup. Jadwal tersimpan: ')+tglId(j.dari)+' – '+tglId(j.sampai)+'.':'Request ditutup. Belum ada jadwal buka.'}
 async function rqStatus(){if(!IMPORT_URL)return;
 try{const j=await impPost({action:'statusRequest'});if(!j.ok)return;rqOpen=!!j.buka;rqShowTab();
 el('rqWin').textContent=rqWinText(j);el('rqBuka').value=j.dari||'';el('rqTutup').value=j.sampai||'';
-if(!rqOpen&&!rqAdminPin&&el('reqView').classList.contains('active'))showTab('dashTab')}catch(e){}}
+if(el('reqView').classList.contains('active'))rqLoad()}catch(e){}}
 async function rqLoad(){rqNames();
 if(!IMPORT_URL){el('rqInfo').textContent='Fitur request belum aktif: IMPORT_URL belum diisi.';el('rqList').innerHTML='';el('rqKirim').disabled=true;return}
 try{const j=await impPost({action:'daftarRequest',pin:rqAdminPin});if(!j.ok)throw Error(j.msg||'gagal');
-rqOpen=!!j.buka;rqShowTab();
-if(!j.buka&&!rqAdminPin){showTab('dashTab');return}
-el('rqInfo').textContent=j.buka?'Request untuk periode '+tglId(j.siklus.awal)+' – '+tglId(j.siklus.akhir)+', dibuka sampai '+tglId(j.sampai)+'. Off jadi X, Cuti jadi AL, atau kode shift yang kamu pilih, langsung masuk draf jadwal.':'MODE ADMIN: request sedang ditutup, staff tidak melihat tab ini. Form dikunci.';
-['rqDari','rqSampai'].forEach(i=>{el(i).min=j.siklus.awal;el(i).max=j.siklus.akhir});el('rqKirim').disabled=!j.buka;
-el('rqList').innerHTML=j.list.length?j.list.map(r=>'<div class="rqrow"><b>'+esc(r.nama)+'</b><span class="badge '+rqCls(r.jenis)+'">'+rqLbl(r.jenis)+'</span><span>'+(r.dari===r.sampai?tglId(r.dari):tglId(r.dari)+' – '+tglId(r.sampai))+'</span><span class="sub">'+esc(r.status)+'</span><button class="install" data-no="'+r.no+'">Batalkan</button></div>').join(''):'<div class="sub">Belum ada request untuk periode ini.</div>'}
+rqOpen=!!j.buka;
+const lock=!j.buka;['rqNama','rqJenis','rqDari','rqSampai','rqKirim'].forEach(i=>el(i).disabled=lock);document.querySelector('#reqView .rqform').classList.toggle('lock',lock);el('reqLock').hidden=!lock;
+if(lock){const msk=j.dari&&j.sampai&&j.dari>hariIsoJkt();el('reqLock').textContent=msk?'🔒 Request belum dibuka. Dijadwalkan dibuka '+tglId(j.dari)+' sampai '+tglId(j.sampai)+'.':'🔒 Request belum dibuka oleh admin. Form dikunci sampai request diaktifkan.';
+el('rqInfo').textContent=rqAdminPin?'MODE ADMIN: request sedang ditutup untuk staff.':'Staff baru bisa mengirim request setelah admin mengaktifkan dan membuka tanggalnya.'}
+else{el('rqInfo').textContent='Request untuk periode '+tglId(j.siklus.awal)+' – '+tglId(j.siklus.akhir)+', dibuka sampai '+tglId(j.sampai)+'. Off jadi X, Cuti jadi AL, atau kode shift yang kamu pilih, langsung masuk draf jadwal.';
+['rqDari','rqSampai'].forEach(i=>{el(i).min=j.siklus.awal;el(i).max=j.siklus.akhir})}
+el('rqList').innerHTML=j.list.length?j.list.map(r=>'<div class="rqrow"><b>'+esc(r.nama)+'</b><span class="badge '+rqCls(r.jenis)+'">'+rqLbl(r.jenis)+'</span><span>'+(r.dari===r.sampai?tglId(r.dari):tglId(r.dari)+' – '+tglId(r.sampai))+'</span><span class="sub">'+esc(r.status)+'</span><button class="install" data-no="'+r.no+'">Batalkan</button></div>').join(''):(lock&&!rqAdminPin?'<div class="sub">Daftar request terlihat saat request dibuka.</div>':'<div class="sub">Belum ada request untuk periode ini.</div>')}
 catch(e){el('rqInfo').textContent='Gagal memuat request: '+e.message}}
 el('rqDari').onchange=()=>{const d=el('rqDari').value,s2=el('rqSampai');if(d&&(!s2.value||s2.value<d))s2.value=d};
 el('rqKirim').onclick=async()=>{const nama=el('rqNama').value,dari=el('rqDari').value,sampai=el('rqSampai').value;
